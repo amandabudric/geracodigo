@@ -29,14 +29,16 @@ export default function FAQSection({ items }: FAQSectionProps) {
       />
       <h2 className="text-2xl font-bold text-gray-900 mb-8">Perguntas Frequentes</h2>
       <div className="space-y-4">
-        {items.map((item, i) => (
+        {items.map((item) => (
           <details
-            key={i}
+            key={item.question}
             className="bg-white border border-gray-200 rounded-xl p-6 group"
           >
-            <summary className="font-semibold text-gray-900 cursor-pointer list-none flex justify-between items-center gap-4">
+            <summary
+              className="font-semibold text-gray-900 cursor-pointer list-none flex justify-between items-center gap-4"
+            >
               {item.question}
-              <span className="text-indigo-500 text-xl shrink-0 group-open:rotate-45 transition-transform">+</span>
+              <span className="text-indigo-500 text-xl shrink-0 group-open:rotate-45 transition-transform" aria-hidden="true">+</span>
             </summary>
             <p className="mt-4 text-gray-600 leading-relaxed">{item.answer}</p>
           </details>

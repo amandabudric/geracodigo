@@ -46,12 +46,27 @@ const schemas = [
 export const metadata: Metadata = {
   title: 'Gerador de QR Code Pix Grátis — Crie seu QR Pix Online | GeraCode',
   description: 'Gere QR Code para pagamento via Pix com chave CPF, CNPJ, e-mail ou aleatória. Payload BR Code gerado no seu navegador, sem cadastro.',
-  alternates: { canonical: 'https://geracodigo.com.br/gerador-de-qr-code-pix' },
+  openGraph: {
+    title: 'Gerador de QR Code Pix Grátis — Crie seu QR Pix Online | GeraCode',
+    description: 'Gere QR Code para pagamento via Pix com chave CPF, CNPJ, e-mail ou aleatória. Payload BR Code gerado no seu navegador, sem cadastro.',
+    url: 'https://www.geracodigo.com.br/gerador-de-qr-code-pix',
+    type: 'website',
+    locale: 'pt_BR',
+    siteName: 'GeraCode',
+    images: [{ url: '/gerador-de-qr-code-pix/opengraph-image', width: 1200, height: 630, alt: 'Gerador de QR Code Pix Grátis — GeraCode' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Gerador de QR Code Pix Grátis | GeraCode',
+    description: 'Gere QR Code para pagamento via Pix. Payload BR Code EMV válido. Sem cadastro.',
+    images: ['/gerador-de-qr-code-pix/opengraph-image'],
+  },
 }
 
 export default function PixPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <link rel="canonical" href="https://www.geracodigo.com.br/gerador-de-qr-code-pix" />
       <SchemaMarkup schema={schemas} />
       <div className="flex justify-center mb-6">
         <AdSlot slot="pix-top" format="horizontal" />
@@ -69,10 +84,10 @@ export default function PixPage() {
         </div>
         <aside className="lg:w-[300px] flex flex-col gap-6">
           <AdSlot slot="pix-sidebar" format="rectangle" />
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
-            <p className="font-semibold mb-1">ℹ️ Cobranças Estáticas</p>
+          <section className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800" aria-labelledby="info-cobrancas">
+            <h3 id="info-cobrancas" className="font-semibold mb-1"><span aria-hidden="true">ℹ️</span> Cobranças Estáticas</h3>
             <p>Este QR gera cobranças estáticas (sem confirmação automática). Para cobranças com notificação, use a API Pix do seu banco.</p>
-          </div>
+          </section>
         </aside>
       </div>
 
@@ -89,11 +104,11 @@ export default function PixPage() {
             { step: '2', title: 'Preencha nome e cidade', desc: 'Digite o nome do recebedor (até 25 caracteres) e a cidade. Opcionalmente, defina um valor fixo e descrição da cobrança.' },
             { step: '3', title: 'Baixe o QR Code', desc: 'O QR Code é gerado instantaneamente no seu navegador. Faça download em PNG ou SVG e use onde quiser.' },
           ].map(({ step, title, desc }) => (
-            <div key={step} className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="w-10 h-10 rounded-full bg-green-100 text-green-700 font-bold text-lg flex items-center justify-center mb-4">{step}</div>
+            <article key={step} className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="w-10 h-10 rounded-full bg-green-100 text-green-700 font-bold text-lg flex items-center justify-center mb-4" aria-hidden="true">{step}</div>
               <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
               <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
-            </div>
+            </article>
           ))}
         </div>
       </section>

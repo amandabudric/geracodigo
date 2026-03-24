@@ -45,12 +45,27 @@ const schemas = [
 export const metadata: Metadata = {
   title: 'Gerador de EAN-13 e EAN-8 Grátis Online | GeraCode',
   description: 'Crie códigos EAN-13 e EAN-8 para produtos, e-commerce e varejo. Geração instantânea no navegador, download imediato.',
-  alternates: { canonical: 'https://geracodigo.com.br/gerador-de-ean' },
+  openGraph: {
+    title: 'Gerador de EAN-13 e EAN-8 Grátis Online | GeraCode',
+    description: 'Crie códigos EAN-13 e EAN-8 para produtos, e-commerce e varejo. Geração instantânea no navegador, download imediato.',
+    url: 'https://www.geracodigo.com.br/gerador-de-ean',
+    type: 'website',
+    locale: 'pt_BR',
+    siteName: 'GeraCode',
+    images: [{ url: '/gerador-de-ean/opengraph-image', width: 1200, height: 630, alt: 'Gerador de EAN-13 e EAN-8 Grátis — GeraCode' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Gerador de EAN-13 e EAN-8 Grátis | GeraCode',
+    description: 'Crie códigos EAN para produtos e varejo. Download PNG e SVG. Sem cadastro.',
+    images: ['/gerador-de-ean/opengraph-image'],
+  },
 }
 
 export default function EanPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <link rel="canonical" href="https://www.geracodigo.com.br/gerador-de-ean" />
       <SchemaMarkup schema={schemas} />
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerador de EAN-13 e EAN-8</h1>
@@ -68,11 +83,11 @@ export default function EanPage() {
             { step: '2', title: 'Digite o número', desc: 'Informe todos os dígitos do código, incluindo o dígito verificador (último dígito). O sistema valida automaticamente.' },
             { step: '3', title: 'Baixe em PNG ou SVG', desc: 'Faça download imediato para usar em embalagens, etiquetas ou sistemas de PDV.' },
           ].map(({ step, title, desc }) => (
-            <div key={step} className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-700 font-bold text-lg flex items-center justify-center mb-4">{step}</div>
+            <article key={step} className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-700 font-bold text-lg flex items-center justify-center mb-4" aria-hidden="true">{step}</div>
               <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
               <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
-            </div>
+            </article>
           ))}
         </div>
       </section>

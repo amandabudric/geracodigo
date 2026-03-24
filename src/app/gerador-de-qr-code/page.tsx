@@ -44,13 +44,28 @@ const schemas = [
 
 export const metadata: Metadata = {
   title: 'Gerador de QR Code Grátis Online | GeraCode',
-  description: 'Gere QR Code para links, textos e Pix. Gratuito, sem cadastro, gerado no seu navegador.',
-  alternates: { canonical: 'https://geracodigo.com.br/gerador-de-qr-code' },
+  description: 'Gere QR Code para links, textos e qualquer conteúdo. Gratuito, sem cadastro, gerado no seu navegador.',
+  openGraph: {
+    title: 'Gerador de QR Code Grátis Online | GeraCode',
+    description: 'Gere QR Code para links, textos e qualquer conteúdo. Color picker, download PNG e SVG. Sem cadastro.',
+    url: 'https://www.geracodigo.com.br/gerador-de-qr-code',
+    type: 'website',
+    locale: 'pt_BR',
+    siteName: 'GeraCode',
+    images: [{ url: '/gerador-de-qr-code/opengraph-image', width: 1200, height: 630, alt: 'Gerador de QR Code Grátis — GeraCode' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Gerador de QR Code Grátis | GeraCode',
+    description: 'Links, textos e qualquer conteúdo. Color picker incluso. Download PNG e SVG. Sem cadastro.',
+    images: ['/gerador-de-qr-code/opengraph-image'],
+  },
 }
 
 export default function QrPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <link rel="canonical" href="https://www.geracodigo.com.br/gerador-de-qr-code" />
       <SchemaMarkup schema={schemas} />
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerador de QR Code</h1>
@@ -68,11 +83,11 @@ export default function QrPage() {
             { step: '2', title: 'Personalize', desc: 'Escolha o tamanho do QR Code e as cores — escura e de fundo — para combinar com a identidade visual do seu negócio.' },
             { step: '3', title: 'Baixe e use', desc: 'Faça download em PNG para uso digital ou SVG para impressão profissional em alta qualidade.' },
           ].map(({ step, title, desc }) => (
-            <div key={step} className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="w-10 h-10 rounded-full bg-sky-100 text-sky-700 font-bold text-lg flex items-center justify-center mb-4">{step}</div>
+            <article key={step} className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="w-10 h-10 rounded-full bg-sky-100 text-sky-700 font-bold text-lg flex items-center justify-center mb-4" aria-hidden="true">{step}</div>
               <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
               <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
-            </div>
+            </article>
           ))}
         </div>
       </section>
@@ -89,10 +104,10 @@ export default function QrPage() {
             { title: 'Wi-Fi', desc: 'Compartilhe a senha do Wi-Fi do seu estabelecimento sem precisar digitá-la manualmente.' },
             { title: 'Embalagens e etiquetas', desc: 'Adicione informações extras ao produto sem ocupar espaço na embalagem.' },
           ].map(({ title, desc }) => (
-            <div key={title}>
+            <article key={title}>
               <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
               <p className="text-sm">{desc}</p>
-            </div>
+            </article>
           ))}
         </div>
       </section>

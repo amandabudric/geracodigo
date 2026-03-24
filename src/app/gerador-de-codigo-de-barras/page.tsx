@@ -46,12 +46,27 @@ const schemas = [
 export const metadata: Metadata = {
   title: 'Gerador de Código de Barras Grátis — EAN-13, Code 128 | GeraCode',
   description: 'Gere códigos EAN-13, EAN-8, Code 128 e mais direto no navegador. Sem cadastro, sem servidor. Download PNG e SVG.',
-  alternates: { canonical: 'https://geracodigo.com.br/gerador-de-codigo-de-barras' },
+  openGraph: {
+    title: 'Gerador de Código de Barras Grátis — EAN-13, Code 128 | GeraCode',
+    description: 'Gere códigos EAN-13, EAN-8, Code 128 e mais direto no navegador. Sem cadastro, sem servidor. Download PNG e SVG.',
+    url: 'https://www.geracodigo.com.br/gerador-de-codigo-de-barras',
+    type: 'website',
+    locale: 'pt_BR',
+    siteName: 'GeraCode',
+    images: [{ url: '/gerador-de-codigo-de-barras/opengraph-image', width: 1200, height: 630, alt: 'Gerador de Código de Barras Grátis — GeraCode' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Gerador de Código de Barras Grátis | GeraCode',
+    description: 'EAN-13, EAN-8, Code 128, Code 39, UPC-A e ISBN. Download PNG e SVG. Sem cadastro.',
+    images: ['/gerador-de-codigo-de-barras/opengraph-image'],
+  },
 }
 
 export default function BarcodePage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <link rel="canonical" href="https://www.geracodigo.com.br/gerador-de-codigo-de-barras" />
       <SchemaMarkup schema={schemas} />
       <div className="flex justify-center mb-6">
         <AdSlot slot="barcode-top" format="horizontal" />
@@ -85,11 +100,11 @@ export default function BarcodePage() {
             { step: '2', title: 'Digite o valor', desc: 'Insira o número ou texto que deseja codificar. Para EAN-13, use 13 dígitos numéricos. Para Code 128, qualquer texto é aceito.' },
             { step: '3', title: 'Baixe o código', desc: 'Clique em "Gerar" e faça o download em PNG (para impressão) ou SVG (para uso em softwares de edição sem perda de qualidade).' },
           ].map(({ step, title, desc }) => (
-            <div key={step} className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold text-lg flex items-center justify-center mb-4">{step}</div>
+            <article key={step} className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold text-lg flex items-center justify-center mb-4" aria-hidden="true">{step}</div>
               <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
               <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
-            </div>
+            </article>
           ))}
         </div>
       </section>
@@ -97,32 +112,32 @@ export default function BarcodePage() {
       {/* O que é */}
       <section className="mt-16 bg-white rounded-xl border border-gray-200 p-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Formatos de código de barras suportados</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-600">
+        <dl className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-600">
           <div>
-            <h3 className="font-semibold text-gray-900 mb-1">EAN-13</h3>
-            <p className="text-sm">Padrão internacional para produtos de consumo. Usado em supermercados, farmácias e varejo em geral. Composto por 13 dígitos numéricos.</p>
+            <dt className="font-semibold text-gray-900 mb-1">EAN-13</dt>
+            <dd className="text-sm">Padrão internacional para produtos de consumo. Usado em supermercados, farmácias e varejo em geral. Composto por 13 dígitos numéricos.</dd>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 mb-1">EAN-8</h3>
-            <p className="text-sm">Versão compacta do EAN-13, usada em embalagens pequenas onde não há espaço para 13 dígitos. Comum em cosméticos e alimentos.</p>
+            <dt className="font-semibold text-gray-900 mb-1">EAN-8</dt>
+            <dd className="text-sm">Versão compacta do EAN-13, usada em embalagens pequenas onde não há espaço para 13 dígitos. Comum em cosméticos e alimentos.</dd>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 mb-1">Code 128</h3>
-            <p className="text-sm">Alta densidade de dados, suporta letras, números e caracteres especiais. Muito usado em logística, etiquetas de envio e controle de estoque.</p>
+            <dt className="font-semibold text-gray-900 mb-1">Code 128</dt>
+            <dd className="text-sm">Alta densidade de dados, suporta letras, números e caracteres especiais. Muito usado em logística, etiquetas de envio e controle de estoque.</dd>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 mb-1">Code 39</h3>
-            <p className="text-sm">Formato antigo e amplamente suportado. Usado em identificação de ativos, crachás e ambientes industriais.</p>
+            <dt className="font-semibold text-gray-900 mb-1">Code 39</dt>
+            <dd className="text-sm">Formato antigo e amplamente suportado. Usado em identificação de ativos, crachás e ambientes industriais.</dd>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 mb-1">UPC-A</h3>
-            <p className="text-sm">Padrão norte-americano com 12 dígitos. Equivalente ao EAN-13 sem o primeiro dígito. Necessário para vender no mercado dos EUA.</p>
+            <dt className="font-semibold text-gray-900 mb-1">UPC-A</dt>
+            <dd className="text-sm">Padrão norte-americano com 12 dígitos. Equivalente ao EAN-13 sem o primeiro dígito. Necessário para vender no mercado dos EUA.</dd>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 mb-1">ISBN</h3>
-            <p className="text-sm">Identificação internacional de livros. Baseado no EAN-13 com prefixo 978 ou 979. Obrigatório para publicações comerciais.</p>
+            <dt className="font-semibold text-gray-900 mb-1">ISBN</dt>
+            <dd className="text-sm">Identificação internacional de livros. Baseado no EAN-13 com prefixo 978 ou 979. Obrigatório para publicações comerciais.</dd>
           </div>
-        </div>
+        </dl>
       </section>
 
       <FAQSection items={[
