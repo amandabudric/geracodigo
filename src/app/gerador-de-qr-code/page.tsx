@@ -1,0 +1,109 @@
+import type { Metadata } from 'next'
+import QrGenerator from './QrGenerator'
+import FAQSection from '@/components/FAQSection'
+import SchemaMarkup from '@/components/SchemaMarkup'
+
+const schemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Gerador de QR Code',
+    description: 'Gere QR Code para links, textos e qualquer conteúdo. Color picker, seletor de tamanho, download PNG e SVG. Gratuito, sem cadastro.',
+    url: 'https://www.geracodigo.com.br/gerador-de-qr-code',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web Browser',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'BRL' },
+    author: { '@type': 'Organization', name: 'GeraCode', url: 'https://www.geracodigo.com.br' },
+    inLanguage: 'pt-BR',
+    isAccessibleForFree: true,
+    featureList: ['QR Code para links e textos', 'Color picker', 'Seletor de tamanho (200–500px)', 'Download PNG e SVG', 'Preview em tempo real', '100% client-side'],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: 'Como gerar QR Code para link ou texto',
+    description: 'Passo a passo para criar QR Code personalizado para qualquer conteúdo.',
+    totalTime: 'PT1M',
+    inLanguage: 'pt-BR',
+    tool: { '@type': 'HowToTool', name: 'GeraCode — Gerador de QR Code' },
+    step: [
+      { '@type': 'HowToStep', position: 1, name: 'Digite o conteúdo', text: 'Cole um link, escreva um texto, número de telefone, e-mail ou qualquer informação.', url: 'https://www.geracodigo.com.br/gerador-de-qr-code#passo-1' },
+      { '@type': 'HowToStep', position: 2, name: 'Personalize', text: 'Escolha o tamanho e as cores para combinar com sua identidade visual.', url: 'https://www.geracodigo.com.br/gerador-de-qr-code#passo-2' },
+      { '@type': 'HowToStep', position: 3, name: 'Baixe e use', text: 'Faça download em PNG para uso digital ou SVG para impressão profissional.', url: 'https://www.geracodigo.com.br/gerador-de-qr-code#passo-3' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br' },
+      { '@type': 'ListItem', position: 2, name: 'Gerador de QR Code', item: 'https://www.geracodigo.com.br/gerador-de-qr-code' },
+    ],
+  },
+]
+
+export const metadata: Metadata = {
+  title: 'Gerador de QR Code Grátis Online | GeraCode',
+  description: 'Gere QR Code para links, textos e Pix. Gratuito, sem cadastro, gerado no seu navegador.',
+  alternates: { canonical: 'https://geracodigo.com.br/gerador-de-qr-code' },
+}
+
+export default function QrPage() {
+  return (
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <SchemaMarkup schema={schemas} />
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerador de QR Code</h1>
+        <p className="text-gray-600">Gere QR Code para links, textos e qualquer conteúdo. Gratuito, sem cadastro.</p>
+        <p className="text-sm text-indigo-600 mt-1">🔒 Gerado direto no seu navegador — seus dados nunca saem do seu computador</p>
+      </div>
+      <QrGenerator />
+
+      {/* Como usar */}
+      <section className="mt-16">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Como gerar seu QR Code</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { step: '1', title: 'Digite o conteúdo', desc: 'Cole um link, escreva um texto, número de telefone, e-mail ou qualquer informação que queira codificar no QR Code.' },
+            { step: '2', title: 'Personalize', desc: 'Escolha o tamanho do QR Code e as cores — escura e de fundo — para combinar com a identidade visual do seu negócio.' },
+            { step: '3', title: 'Baixe e use', desc: 'Faça download em PNG para uso digital ou SVG para impressão profissional em alta qualidade.' },
+          ].map(({ step, title, desc }) => (
+            <div key={step} className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="w-10 h-10 rounded-full bg-sky-100 text-sky-700 font-bold text-lg flex items-center justify-center mb-4">{step}</div>
+              <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* O que é */}
+      <section className="mt-16 bg-white rounded-xl border border-gray-200 p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Para que serve o QR Code?</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-600">
+          {[
+            { title: 'Links e sites', desc: 'Direcione clientes para seu site, cardápio digital, página de produto ou rede social.' },
+            { title: 'Pagamento Pix', desc: 'Para QR Code Pix com payload válido, use nossa ferramenta dedicada em /gerador-de-qr-code-pix.' },
+            { title: 'Cardápios digitais', desc: 'Restaurantes e lanchonetes usam QR Code para substituir cardápios físicos e reduzir custos.' },
+            { title: 'Redes sociais e contato', desc: 'Codifique seu WhatsApp, Instagram ou LinkedIn para que clientes adicionem seu contato com um escaneamento.' },
+            { title: 'Wi-Fi', desc: 'Compartilhe a senha do Wi-Fi do seu estabelecimento sem precisar digitá-la manualmente.' },
+            { title: 'Embalagens e etiquetas', desc: 'Adicione informações extras ao produto sem ocupar espaço na embalagem.' },
+          ].map(({ title, desc }) => (
+            <div key={title}>
+              <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
+              <p className="text-sm">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <FAQSection items={[
+        { question: 'O QR Code gerado tem validade?', answer: 'Não. QR Codes estáticos não expiram. Enquanto o conteúdo codificado (link, texto) existir, o QR Code funcionará para sempre.' },
+        { question: 'Posso personalizar as cores do QR Code?', answer: 'Sim. O GeraCode permite escolher a cor escura (dos módulos) e a cor de fundo. Atenção: mantenha contraste suficiente entre as cores para garantir a leitura correta.' },
+        { question: 'Qual tamanho mínimo para imprimir um QR Code?', answer: 'Para impressão, o tamanho mínimo recomendado é 2 × 2 cm. Para garantir leitura em qualquer smartphone, prefira 3 × 3 cm ou mais.' },
+        { question: 'O QR Code funciona sem internet?', answer: 'O escaneamento funciona offline, mas o conteúdo (como um link) pode exigir conexão para ser acessado. Textos simples e contatos funcionam completamente offline.' },
+        { question: 'Qual a diferença entre PNG e SVG?', answer: 'PNG é um arquivo de imagem com resolução fixa, ideal para uso digital. SVG é vetorial e pode ser ampliado infinitamente sem perder qualidade, ideal para impressão profissional.' },
+      ]} />
+    </div>
+  )
+}
