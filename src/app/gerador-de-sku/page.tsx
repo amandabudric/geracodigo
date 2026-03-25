@@ -1,0 +1,190 @@
+import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
+import Link from 'next/link'
+import GeneratorSkeleton from '@/components/GeneratorSkeleton'
+import FAQSection from '@/components/FAQSection'
+import AdSlot from '@/components/AdSlot'
+import SchemaMarkup from '@/components/SchemaMarkup'
+import RelatedTools from '@/components/RelatedTools'
+import Breadcrumb from '@/components/Breadcrumb'
+
+const SkuGeneratorClient = dynamic(() => import('./SkuGeneratorClient'), {
+  loading: () => <GeneratorSkeleton />,
+})
+
+const schemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Gerador de SKU',
+    description: 'Gere códigos SKU padronizados para seus produtos. Defina prefixo, categoria, atributos e sequencial. Geração em lote com exportação CSV.',
+    url: 'https://www.geracodigo.com.br/gerador-de-sku',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web Browser',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'BRL' },
+    author: { '@type': 'Organization', name: 'GeraCode', url: 'https://www.geracodigo.com.br' },
+    inLanguage: 'pt-BR',
+    isAccessibleForFree: true,
+    featureList: [
+      'Geração de SKU padronizado', 'Prefixo de marca', 'Categoria de produto',
+      'Atributos customizáveis (cor, tamanho)', 'Número sequencial',
+      'Geração em lote (até 500)', 'Exportação CSV', 'Preview em tempo real',
+      '100% client-side',
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: 'Como criar códigos SKU para produtos',
+    description: 'Passo a passo para gerar SKUs padronizados para controle de estoque.',
+    totalTime: 'PT3M',
+    inLanguage: 'pt-BR',
+    tool: { '@type': 'HowToTool', name: 'GeraCode — Gerador de SKU' },
+    step: [
+      { '@type': 'HowToStep', position: 1, name: 'Defina o padrão', text: 'Escolha um prefixo para sua marca, uma abreviação para a categoria e atributos como cor e tamanho.' },
+      { '@type': 'HowToStep', position: 2, name: 'Configure a quantidade', text: 'Defina o número sequencial inicial e quantos SKUs deseja gerar de uma vez.' },
+      { '@type': 'HowToStep', position: 3, name: 'Gere e exporte', text: 'Clique em Gerar, copie os SKUs ou exporte em CSV para importar no seu sistema.' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br' },
+      { '@type': 'ListItem', position: 2, name: 'Gerador de SKU', item: 'https://www.geracodigo.com.br/gerador-de-sku' },
+    ],
+  },
+]
+
+export const metadata: Metadata = {
+  title: 'Gerador de SKU Grátis — Crie Códigos SKU para Produtos',
+  description: 'Gerador de SKU grátis para controle de estoque. Defina prefixo, categoria, cor, tamanho e gere até 500 SKUs de uma vez. Exportação CSV. Sem cadastro.',
+  alternates: {
+    canonical: 'https://www.geracodigo.com.br/gerador-de-sku',
+  },
+  openGraph: {
+    title: 'Gerador de SKU Grátis — Códigos para Controle de Estoque | GeraCode',
+    description: 'Gere SKUs padronizados para seus produtos. Lote, CSV, sem cadastro.',
+    url: 'https://www.geracodigo.com.br/gerador-de-sku',
+    type: 'website',
+    locale: 'pt_BR',
+    siteName: 'GeraCode',
+    images: [{ url: '/gerador-de-sku/opengraph-image', width: 1200, height: 630, alt: 'Gerador de SKU Grátis — GeraCode' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Gerador de SKU Grátis | GeraCode',
+    description: 'Crie SKUs padronizados para controle de estoque. Lote e CSV.',
+    images: ['/gerador-de-sku/opengraph-image'],
+  },
+}
+
+export default function SkuPage() {
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <SchemaMarkup schema={schemas} />
+      <div className="flex justify-center mb-6">
+        <AdSlot slot="sku-top" format="horizontal" />
+      </div>
+      <Breadcrumb current="Gerador de SKU" />
+
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerador de SKU Grátis Online</h1>
+        <p className="text-gray-600">Crie códigos SKU padronizados para organizar seu estoque. Geração em lote com exportação CSV.</p>
+        <p className="text-sm text-indigo-600 mt-1">Tudo processado no seu navegador — nenhum dado sai do seu dispositivo</p>
+      </div>
+
+      <SkuGeneratorClient />
+
+      {/* Como funciona */}
+      <section className="mt-16">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Como criar códigos SKU</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { step: '1', title: 'Defina o padrão', desc: 'Escolha um prefixo para identificar sua marca/loja (ex: LOJA), uma abreviação para a categoria (ex: CAM para camiseta) e atributos como cor e tamanho.' },
+            { step: '2', title: 'Configure a quantidade', desc: 'Defina o número sequencial inicial e quantos SKUs deseja gerar (até 500 de uma vez). O preview mostra como ficará o SKU em tempo real.' },
+            { step: '3', title: 'Gere e exporte', desc: 'Clique em Gerar. Copie os SKUs para a área de transferência ou baixe em CSV para importar no seu ERP, planilha ou plataforma de e-commerce.' },
+          ].map(({ step, title, desc }) => (
+            <article key={step} className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-700 font-bold text-lg flex items-center justify-center mb-4" aria-hidden="true">{step}</div>
+              <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* O que e SKU */}
+      <section className="mt-16 bg-white rounded-xl border border-gray-200 p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">O que é SKU?</h2>
+        <div className="prose prose-gray max-w-none text-gray-600 space-y-4">
+          <p>
+            <strong>SKU (Stock Keeping Unit)</strong> é um código interno criado pela própria empresa para identificar cada variação de produto no estoque.
+            Diferente do código de barras EAN (que é universal e registrado na GS1), o SKU é definido livremente pelo lojista.
+          </p>
+          <p>
+            Um bom sistema de SKU facilita a <strong>gestão de estoque</strong>, permite localizar produtos rapidamente, evita erros no
+            despacho e melhora a organização geral do catálogo.
+          </p>
+          <p>
+            Exemplo: <code className="bg-gray-100 px-1 py-0.5 rounded text-sm">LOJA-CAM-AZL-M-0001</code> identifica
+            a camiseta azul tamanho M, número 0001, da loja.
+          </p>
+        </div>
+      </section>
+
+      {/* Boas praticas */}
+      <section className="mt-16">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Boas práticas para criar SKUs</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[
+            { title: 'Seja consistente', desc: 'Defina um padrão e mantenha-o para todos os produtos. Use sempre a mesma quantidade de caracteres para cada campo.' },
+            { title: 'Use abreviações claras', desc: 'CAM para camiseta, CAL para calça, AZL para azul, VRM para vermelho. Qualquer pessoa da equipe deve entender o código.' },
+            { title: 'Evite caracteres especiais', desc: 'Use apenas letras maiúsculas, números e separadores simples (hífen ou underline). Evite acentos, espaços e caracteres especiais.' },
+            { title: 'Inclua número sequencial', desc: 'O sequencial garante unicidade mesmo quando dois produtos compartilham categoria e atributos. Use 4 dígitos (0001-9999).' },
+            { title: 'Não confunda com EAN', desc: 'SKU é interno da sua empresa. EAN é universal e registrado na GS1. Um produto pode (e deve) ter ambos.' },
+            { title: 'Documente o padrão', desc: 'Crie uma tabela de referência com as abreviações usadas. Compartilhe com toda a equipe para manter a consistência.' },
+          ].map(({ title, desc }) => (
+            <article key={title} className="bg-white rounded-xl border border-gray-200 p-6">
+              <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+              <p className="text-sm text-gray-500">{desc}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* SKU vs EAN */}
+      <section className="mt-16 bg-white rounded-xl border border-gray-200 p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">SKU vs Código de Barras (EAN): Qual a diferença?</h2>
+        <div className="text-gray-600 space-y-4">
+          <p>
+            O <strong>SKU</strong> é um código interno, definido livremente por cada empresa. Não segue padrão universal e serve para
+            organização interna do estoque, controle de variações (cor, tamanho) e logística interna.
+          </p>
+          <p>
+            O <strong>EAN (código de barras)</strong> é um padrão global administrado pela GS1. É lido por leitores ópticos no ponto de
+            venda e identifica o produto em qualquer sistema comercial do mundo.
+          </p>
+          <p>
+            <strong>Na prática:</strong> use SKU para organizar seu estoque internamente e EAN para identificar o produto no mercado.
+            Um produto pode ter ambos. Use o <Link href="/gerador-de-codigo-de-barras" className="text-indigo-600 hover:underline">Gerador de Código de Barras</Link> para criar os códigos EAN e este gerador para os SKUs.
+          </p>
+        </div>
+      </section>
+
+      <FAQSection items={[
+        { question: 'O que é SKU e para que serve?', answer: 'SKU (Stock Keeping Unit) é um código interno de identificação de produtos criado pela própria empresa. Serve para organizar o estoque, facilitar a localização de produtos e controlar variações (cor, tamanho, modelo).' },
+        { question: 'SKU é o mesmo que código de barras?', answer: 'Não. SKU é um código interno definido pelo lojista. Código de barras (EAN) é um padrão universal registrado na GS1. Um produto pode ter ambos — o SKU para gestão interna e o EAN para identificação no mercado.' },
+        { question: 'Quantos SKUs posso gerar de uma vez?', answer: 'Você pode gerar até 500 SKUs de uma vez no GeraCode. Todos são exibidos na tela e podem ser copiados ou exportados em CSV.' },
+        { question: 'Posso exportar os SKUs para Excel?', answer: 'Sim. Use o botão CSV para baixar os SKUs em formato CSV, que pode ser aberto diretamente no Excel, Google Sheets ou importado em sistemas ERP e plataformas de e-commerce.' },
+        { question: 'Como devo abreviar categorias e atributos?', answer: 'Use 2 a 4 letras maiúsculas que sejam intuitivas: CAM para camiseta, CAL para calça, AZL para azul, VRM para vermelho, P/M/G para tamanhos. O importante é manter a consistência.' },
+      ]} />
+
+      <div className="flex justify-center mt-8">
+        <AdSlot slot="sku-bottom" format="horizontal" />
+      </div>
+
+      <RelatedTools currentPath="/gerador-de-sku" />
+    </div>
+  )
+}

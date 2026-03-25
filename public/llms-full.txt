@@ -1,0 +1,169 @@
+# GeraCode — Documentação Completa
+
+> Ferramentas gratuitas de geração de código de barras, QR Code, leitura de códigos e SKU para lojistas brasileiros. 100% client-side — nenhum dado é enviado para servidores.
+
+---
+
+## 1. Gerador de QR Code Pix
+
+**URL:** https://www.geracodigo.com.br/gerador-de-qr-code-pix
+
+O Gerador de QR Code Pix do GeraCode cria QR Codes estáticos para pagamento via Pix, seguindo o padrão BR Code EMV definido pelo Banco Central do Brasil. O payload gerado é compatível com todos os bancos e fintechs participantes do Pix no Brasil.
+
+### Funcionalidades
+- Suporte a todos os tipos de chave Pix: CPF, CNPJ, e-mail, telefone (+55) e chave aleatória (UUID)
+- Campos: chave Pix, nome do recebedor (máx. 25 chars), cidade (máx. 15 chars), valor (opcional), identificador da transação (opcional), descrição (opcional)
+- Payload BR Code EMV com checksum CRC16 válido
+- Download em PNG e SVG
+- Cópia do payload BR Code para a área de transferência
+- Preview em tempo real
+
+### Tipo de cobrança
+O GeraCode gera QR Codes Pix estáticos, que são fixos e podem ser usados múltiplas vezes. Para cobranças dinâmicas com confirmação automática e geração de comprovante, é necessário utilizar a API Pix do banco.
+
+### Bancos compatíveis
+Todos os bancos e fintechs participantes do Pix: Nubank, Itaú, Bradesco, Caixa, Banco do Brasil, Santander, Inter, PagSeguro, Mercado Pago, C6 Bank, BTG Pactual, Sicoob, Sicredi, Banrisul e outros.
+
+---
+
+## 2. Gerador de Código de Barras
+
+**URL:** https://www.geracodigo.com.br/gerador-de-codigo-de-barras
+
+Gerador gratuito de códigos de barras em múltiplos formatos, incluindo os padrões mais usados no varejo brasileiro e internacional.
+
+### Formatos suportados
+- **EAN-13**: Padrão internacional para produtos de consumo (13 dígitos). Usado em supermercados, farmácias e varejo em geral.
+- **EAN-8**: Versão compacta do EAN-13 (8 dígitos). Para embalagens pequenas.
+- **Code 128**: Alta densidade, suporta letras, números e caracteres especiais. Usado em logística e controle de estoque.
+- **Code 39**: Formato amplamente suportado. Usado em identificação de ativos e ambientes industriais.
+- **UPC-A**: Padrão norte-americano (12 dígitos). Necessário para vender nos EUA.
+- **ISBN**: Identificação internacional de livros. Baseado no EAN-13 com prefixo 978 ou 979.
+
+### Download
+- PNG (imagem raster para uso digital e impressão)
+- SVG (vetorial, redimensionável sem perda de qualidade)
+
+### Nota sobre GS1 Brasil
+Para comercializar produtos em redes varejistas (supermercados, farmácias), os códigos EAN devem ser registrados na GS1 Brasil. O GeraCode é ideal para testes, uso interno e e-commerce próprio.
+
+---
+
+## 3. Gerador de EAN-13 e EAN-8
+
+**URL:** https://www.geracodigo.com.br/gerador-de-ean
+
+Gerador dedicado para códigos EAN (European Article Number), o sistema de codificação de produtos mais usado no mundo.
+
+### EAN-13
+- 13 dígitos numéricos
+- Prefixo 789 ou 790 para o Brasil
+- Estrutura: país (3 dígitos) + fabricante + produto + dígito verificador
+- Usado na maioria dos produtos de consumo vendidos no varejo
+
+### EAN-8
+- 8 dígitos numéricos
+- Versão compacta para embalagens pequenas
+- Comum em cosméticos, balas, chicletes e alimentos de embalagem reduzida
+
+### Validação
+O gerador valida automaticamente o dígito verificador informado.
+
+---
+
+## 4. Gerador de QR Code
+
+**URL:** https://www.geracodigo.com.br/gerador-de-qr-code
+
+Gerador de QR Code genérico para qualquer conteúdo: links, textos, números de telefone, e-mails e mais.
+
+### Funcionalidades
+- Geração em tempo real com debounce de 300ms
+- Color picker para cor escura (módulos) e cor de fundo
+- Seletor de tamanho: 200, 300, 400 ou 500 pixels
+- Download em PNG e SVG
+- Preview instantâneo
+
+### Casos de uso
+- Links para sites e landing pages
+- Cardápios digitais para restaurantes
+- Redes sociais e contato (WhatsApp, Instagram, LinkedIn)
+- Compartilhamento de senha Wi-Fi
+- Embalagens e etiquetas com informações extras
+
+---
+
+## 5. Leitor de Código de Barras
+
+**URL:** https://www.geracodigo.com.br/leitor-de-codigo-de-barras
+
+Leitor online de códigos de barras e QR Codes que funciona diretamente no navegador, usando a câmera do dispositivo. Não é necessário instalar nenhum aplicativo.
+
+### Formatos suportados
+- **EAN-13 / EAN-8**: Códigos de barras de produtos de consumo
+- **Code 128 / Code 39 / Code 93**: Códigos industriais e de logística
+- **UPC-A / UPC-E**: Padrão norte-americano
+- **ITF**: Interleaved 2 of 5
+- **Codabar**: Usado em bibliotecas e bancos de sangue
+- **QR Code**: Códigos bidimensionais
+
+### Funcionalidades
+- Leitura via câmera do dispositivo (celular ou webcam)
+- Detecção automática do formato do código
+- Histórico de leituras na sessão
+- Entrada manual de código para consulta
+- 100% client-side — nenhum dado é enviado para servidores
+- Sem instalação de aplicativos
+
+### Como usar
+1. Acesse o leitor no navegador do celular ou computador
+2. Clique em "Iniciar Câmera" e permita o acesso quando solicitado
+3. Posicione o código de barras ou QR Code na frente da câmera — a leitura é automática
+
+---
+
+## 6. Gerador de SKU
+
+**URL:** https://www.geracodigo.com.br/gerador-de-sku
+
+Gerador de códigos SKU (Stock Keeping Unit) padronizados para controle de estoque e identificação de produtos no e-commerce.
+
+### Funcionalidades
+- Prefixo de marca personalizável
+- Categoria de produto (abreviação)
+- Atributos customizáveis (cor, tamanho, material etc.)
+- Número sequencial com início configurável
+- Separador personalizável entre os campos
+- Preview em tempo real do SKU gerado
+- Geração em lote (até 500 SKUs por vez)
+- Exportação em CSV para importação no sistema de gestão
+- 100% client-side
+
+### Estrutura do SKU
+O SKU gerado segue o padrão: `PREFIXO-CATEGORIA-ATRIBUTO1-ATRIBUTO2-SEQUENCIAL`
+
+Exemplo: `NK-CAL-VRM-M-001` (Nike, Calçado, Vermelho, M, item 001)
+
+### Casos de uso
+- Cadastro de produtos em e-commerce (Shopify, Nuvemshop, WooCommerce)
+- Controle de estoque em lojas físicas
+- Organização de catálogos de produtos
+- Padronização de nomenclatura entre canais de venda
+
+---
+
+## Privacidade e Segurança
+
+Todas as ferramentas do GeraCode funcionam 100% no navegador do usuário (client-side). Nenhum dado — chave Pix, nome, valor, código de barras — é enviado para servidores externos. O processamento acontece inteiramente no dispositivo do usuário.
+
+---
+
+## Informações Técnicas
+
+- Framework: Next.js (React)
+- Hospedagem: Vercel
+- Geração de QR Code: biblioteca `qrcode` (npm)
+- Geração de código de barras: biblioteca `jsbarcode` (npm)
+- Payload Pix: implementação própria do padrão BR Code EMV com CRC16 CCITT
+- Idioma: Português (Brasil)
+- URL: https://www.geracodigo.com.br

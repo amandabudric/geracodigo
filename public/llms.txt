@@ -1,0 +1,28 @@
+# GeraCode
+
+> Ferramentas gratuitas de geração de código de barras, QR Code, leitura de códigos e SKU para lojistas brasileiros. 100% client-side — nenhum dado é enviado para servidores.
+
+## Ferramentas disponíveis
+
+- [Gerador de QR Code Pix](https://www.geracodigo.com.br/gerador-de-qr-code-pix): Gera QR Code para pagamento via Pix com payload BR Code EMV válido. Suporta chaves CPF, CNPJ, e-mail, telefone e aleatória.
+- [Gerador de Código de Barras](https://www.geracodigo.com.br/gerador-de-codigo-de-barras): Gera códigos EAN-13, EAN-8, Code 128, Code 39, UPC-A e ISBN. Download em PNG e SVG.
+- [Gerador de EAN-13 e EAN-8](https://www.geracodigo.com.br/gerador-de-ean): Gerador dedicado para códigos EAN para produtos, e-commerce e varejo brasileiro.
+- [Gerador de QR Code](https://www.geracodigo.com.br/gerador-de-qr-code): Gera QR Code para links, textos e qualquer conteúdo. Inclui color picker e seletor de tamanho.
+- [Leitor de Código de Barras](https://www.geracodigo.com.br/leitor-de-codigo-de-barras): Leia códigos de barras e QR Codes usando a câmera do dispositivo. Suporta EAN-13, Code 128, QR Code e mais. Sem instalar nada.
+- [Gerador de SKU](https://www.geracodigo.com.br/gerador-de-sku): Gere códigos SKU padronizados para produtos. Prefixo, categoria, atributos e sequencial. Geração em lote com exportação CSV.
+
+## Sobre
+
+GeraCode é um conjunto de ferramentas online gratuitas voltadas para lojistas e empreendedores brasileiros. Todas as ferramentas funcionam 100% no navegador do usuário (client-side), garantindo total privacidade dos dados.
+
+## Informações adicionais
+
+- Site: https://www.geracodigo.com.br
+- Idioma: Português (Brasil)
+- Gratuito: Sim, sem limite de uso
+- Cadastro necessário: Não
+- Dados enviados a servidores: Não (100% client-side)
+
+## Documentação completa
+
+Para informações detalhadas sobre cada ferramenta, consulte: [llms-full.txt](https://www.geracodigo.com.br/llms-full.txt)

@@ -1,7 +1,15 @@
 import type { Metadata } from 'next'
-import EanGenerator from './EanGenerator'
+import dynamic from 'next/dynamic'
+import GeneratorSkeleton from '@/components/GeneratorSkeleton'
 import FAQSection from '@/components/FAQSection'
+import AdSlot from '@/components/AdSlot'
 import SchemaMarkup from '@/components/SchemaMarkup'
+import RelatedTools from '@/components/RelatedTools'
+import Breadcrumb from '@/components/Breadcrumb'
+
+const EanGenerator = dynamic(() => import('./EanGenerator'), {
+  loading: () => <GeneratorSkeleton />,
+})
 
 const schemas = [
   {
@@ -16,7 +24,7 @@ const schemas = [
     author: { '@type': 'Organization', name: 'GeraCode', url: 'https://www.geracodigo.com.br' },
     inLanguage: 'pt-BR',
     isAccessibleForFree: true,
-    featureList: ['EAN-13', 'EAN-8', 'Validação automática do dígito verificador', 'Download PNG e SVG', '100% client-side'],
+    featureList: ['EAN-13', 'EAN-8', 'Validação automática do dígito verificador', 'Download PNG, SVG e PDF', '100% client-side'],
   },
   {
     '@context': 'https://schema.org',
@@ -29,7 +37,7 @@ const schemas = [
     step: [
       { '@type': 'HowToStep', position: 1, name: 'Escolha EAN-13 ou EAN-8', text: 'EAN-13 para a maioria dos produtos. EAN-8 para embalagens pequenas.', url: 'https://www.geracodigo.com.br/gerador-de-ean#passo-1' },
       { '@type': 'HowToStep', position: 2, name: 'Digite o número EAN', text: 'Informe todos os dígitos incluindo o dígito verificador (último dígito).', url: 'https://www.geracodigo.com.br/gerador-de-ean#passo-2' },
-      { '@type': 'HowToStep', position: 3, name: 'Baixe em PNG ou SVG', text: 'Faça download imediato para usar em embalagens, etiquetas ou sistemas de PDV.', url: 'https://www.geracodigo.com.br/gerador-de-ean#passo-3' },
+      { '@type': 'HowToStep', position: 3, name: 'Baixe em PNG, SVG ou PDF', text: 'Faça download imediato para usar em embalagens, etiquetas ou sistemas de PDV.', url: 'https://www.geracodigo.com.br/gerador-de-ean#passo-3' },
     ],
   },
   {
@@ -43,11 +51,14 @@ const schemas = [
 ]
 
 export const metadata: Metadata = {
-  title: 'Gerador de EAN-13 e EAN-8 Grátis Online | GeraCode',
-  description: 'Crie códigos EAN-13 e EAN-8 para produtos, e-commerce e varejo. Geração instantânea no navegador, download imediato.',
+  title: 'Gerador de EAN-13 e EAN-8 Grátis Online',
+  description: 'Crie códigos EAN-13 e EAN-8 grátis para produtos, e-commerce e varejo. Download instantâneo em PNG, SVG e PDF. Sem cadastro, 100% privado.',
+  alternates: {
+    canonical: 'https://www.geracodigo.com.br/gerador-de-ean',
+  },
   openGraph: {
     title: 'Gerador de EAN-13 e EAN-8 Grátis Online | GeraCode',
-    description: 'Crie códigos EAN-13 e EAN-8 para produtos, e-commerce e varejo. Geração instantânea no navegador, download imediato.',
+    description: 'Crie códigos EAN-13 e EAN-8 grátis para produtos, e-commerce e varejo. Download instantâneo em PNG, SVG e PDF. Sem cadastro.',
     url: 'https://www.geracodigo.com.br/gerador-de-ean',
     type: 'website',
     locale: 'pt_BR',
@@ -57,7 +68,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Gerador de EAN-13 e EAN-8 Grátis | GeraCode',
-    description: 'Crie códigos EAN para produtos e varejo. Download PNG e SVG. Sem cadastro.',
+    description: 'Crie códigos EAN para produtos e varejo. Download PNG, SVG e PDF. Sem cadastro.',
     images: ['/gerador-de-ean/opengraph-image'],
   },
 }
@@ -65,10 +76,13 @@ export const metadata: Metadata = {
 export default function EanPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <link rel="canonical" href="https://www.geracodigo.com.br/gerador-de-ean" />
       <SchemaMarkup schema={schemas} />
+      <div className="flex justify-center mb-6">
+        <AdSlot slot="ean-top" format="horizontal" />
+      </div>
+      <Breadcrumb current="Gerador de EAN-13 e EAN-8" />
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerador de EAN-13 e EAN-8</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerador de EAN-13 e EAN-8 Grátis Online</h1>
         <p className="text-gray-600">Crie códigos EAN para produtos, e-commerce e varejo. Geração instantânea no navegador.</p>
         <p className="text-sm text-indigo-600 mt-1">🔒 Gerado direto no seu navegador — seus dados nunca saem do seu computador</p>
       </div>
@@ -81,7 +95,7 @@ export default function EanPage() {
           {[
             { step: '1', title: 'Escolha EAN-13 ou EAN-8', desc: 'EAN-13 tem 13 dígitos e é o padrão para a maioria dos produtos. EAN-8 tem 8 dígitos e é usado em embalagens pequenas.' },
             { step: '2', title: 'Digite o número', desc: 'Informe todos os dígitos do código, incluindo o dígito verificador (último dígito). O sistema valida automaticamente.' },
-            { step: '3', title: 'Baixe em PNG ou SVG', desc: 'Faça download imediato para usar em embalagens, etiquetas ou sistemas de PDV.' },
+            { step: '3', title: 'Baixe em PNG, SVG ou PDF', desc: 'Faça download imediato para usar em embalagens, etiquetas ou sistemas de PDV.' },
           ].map(({ step, title, desc }) => (
             <article key={step} className="bg-white rounded-xl border border-gray-200 p-6">
               <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-700 font-bold text-lg flex items-center justify-center mb-4" aria-hidden="true">{step}</div>
@@ -103,6 +117,52 @@ export default function EanPage() {
         </div>
       </section>
 
+      {/* Estrutura do EAN-13 */}
+      <section className="mt-16">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Estrutura do Código EAN-13</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[
+            { title: 'Prefixo do país (3 dígitos)', desc: 'Os três primeiros dígitos identificam o país de origem. Para o Brasil, os prefixos são 789 e 790, atribuídos pela GS1 Global à GS1 Brasil.' },
+            { title: 'Código do fabricante (4-7 dígitos)', desc: 'Identifica a empresa fabricante ou importadora. O número de dígitos varia conforme o plano contratado na GS1 Brasil.' },
+            { title: 'Código do produto (2-5 dígitos)', desc: 'Identificador único do produto dentro do catálogo da empresa. Definido pelo próprio fabricante.' },
+            { title: 'Dígito verificador (1 dígito)', desc: 'O último dígito é calculado pelo algoritmo de módulo 10, garantindo a integridade do código. Nosso gerador valida automaticamente.' },
+          ].map(({ title, desc }) => (
+            <article key={title} className="bg-white rounded-xl border border-gray-200 p-6">
+              <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+              <p className="text-sm text-gray-500">{desc}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* Onde usar EAN */}
+      <section className="mt-16 bg-white rounded-xl border border-gray-200 p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Onde Usar o Código EAN</h2>
+        <div className="prose prose-gray max-w-none text-gray-600">
+          <ul className="list-disc pl-5 space-y-2 text-sm">
+            <li><strong>Supermercados e varejo:</strong> O EAN-13 é o padrão para leitura nos caixas (PDV) de redes varejistas em todo o Brasil.</li>
+            <li><strong>E-commerce e marketplaces:</strong> Mercado Livre, Amazon, Shopee e outros marketplaces usam o EAN para identificação de produtos.</li>
+            <li><strong>Controle de estoque:</strong> Facilita a gestão de inventário com leitores de código de barras portáteis.</li>
+            <li><strong>Logística e distribuição:</strong> Permite rastreamento de produtos ao longo da cadeia de suprimentos.</li>
+            <li><strong>Indústria farmacêutica:</strong> Códigos EAN são obrigatórios para medicamentos e produtos de saúde no Brasil.</li>
+            <li><strong>Exportação:</strong> O padrão EAN é reconhecido internacionalmente em mais de 100 países.</li>
+          </ul>
+        </div>
+      </section>
+
+      {/* Prefixos do Brasil */}
+      <section className="mt-16">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Prefixos EAN do Brasil</h2>
+        <div className="text-gray-600 space-y-4">
+          <p>
+            O Brasil possui dois prefixos de país atribuídos pela GS1 Global: <strong>789</strong> e <strong>790</strong>. Todo produto brasileiro registrado na GS1 Brasil terá seu código EAN-13 começando com um desses prefixos.
+          </p>
+          <p className="text-sm">
+            Exemplos de prefixos de outros países: EUA e Canadá (000-019), França (300-379), Alemanha (400-440), Japão (450-459), China (690-695), Argentina (779).
+          </p>
+        </div>
+      </section>
+
       <FAQSection items={[
         { question: 'Qual a diferença entre EAN-13 e EAN-8?', answer: 'EAN-13 usa 13 dígitos e é o padrão para a maioria dos produtos de consumo. EAN-8 usa 8 dígitos e foi criado para embalagens pequenas onde não há espaço para 13 dígitos, como balas, chicletes e cosméticos compactos.' },
         { question: 'Preciso registrar o EAN na GS1 para vender no varejo?', answer: 'Sim. Para vender em supermercados, farmácias e grandes redes varejistas, o código EAN deve ser registrado na GS1 Brasil. O GeraCode é ideal para testes, uso interno e e-commerce próprio.' },
@@ -110,6 +170,12 @@ export default function EanPage() {
         { question: 'O código gerado funciona em leitores de código de barras?', answer: 'Sim, desde que o número informado seja válido. O código gerado em PNG ou SVG pode ser impresso e lido por qualquer leitor de código de barras compatível com EAN.' },
         { question: 'Posso usar EAN-13 para vender no Mercado Livre?', answer: 'Sim. O Mercado Livre aceita EAN-13 como identificador de produto no cadastro. Para itens novos, o código EAN ajuda o sistema a identificar o produto automaticamente.' },
       ]} />
+
+      <div className="flex justify-center mt-8">
+        <AdSlot slot="ean-bottom" format="horizontal" />
+      </div>
+
+      <RelatedTools currentPath="/gerador-de-ean" />
     </div>
   )
 }

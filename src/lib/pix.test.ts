@@ -1,32 +1,185 @@
-import { generatePixPayload } from './pix'
+import { describe, it, expect } from 'vitest'
+import { generatePixPayload, type PixParams } from './pix'
+import { crc16 } from './crc16'
+import { normalize } from './normalize'
 
-function runTests() {
-  const payload = generatePixPayload({
-    keyType: 'EMAIL',
+describe('crc16', () => {
+  it('returns a 4-char uppercase hex string', () => {
+    const result = crc16('test')
+    expect(result).toMatch(/^[0-9A-F]{4}$/)
+  })
+
+  it('is deterministic', () => {
+    expect(crc16('abc')).toBe(crc16('abc'))
+  })
+
+  it('returns different values for different inputs', () => {
+    expect(crc16('abc')).not.toBe(crc16('xyz'))
+  })
+
+  it('handles empty string', () => {
+    const result = crc16('')
+    expect(result).toMatch(/^[0-9A-F]{4}$/)
+  })
+})
+
+describe('normalize', () => {
+  it('removes accents', () => {
+    expect(normalize('São Paulo')).toBe('SAO PAULO')
+  })
+
+  it('converts to uppercase', () => {
+    expect(normalize('hello')).toBe('HELLO')
+  })
+
+  it('replaces special characters with spaces', () => {
+    expect(normalize('a@b#c')).toBe('A B C')
+  })
+
+  it('collapses multiple spaces', () => {
+    expect(normalize('a   b   c')).toBe('A B C')
+  })
+
+  it('trims whitespace', () => {
+    expect(normalize('  test  ')).toBe('TEST')
+  })
+
+  it('handles complex Brazilian names', () => {
+    expect(normalize('José da Conceição')).toBe('JOSE DA CONCEICAO')
+  })
+
+  it('preserves numbers', () => {
+    expect(normalize('pedido 123')).toBe('PEDIDO 123')
+  })
+})
+
+describe('generatePixPayload', () => {
+  const baseParams = {
+    keyType: 'EMAIL' as const,
     key: 'fulano@email.com',
     name: 'Fulano de Tal',
     city: 'Sao Paulo',
-    value: 10.50,
-    txid: 'PEDIDO123',
+  }
+
+  it('starts with payload format indicator 000201', () => {
+    const payload = generatePixPayload(baseParams)
+    expect(payload.startsWith('000201')).toBe(true)
   })
 
-  console.log('Payload gerado:')
-  console.log(payload)
-  console.log()
+  it('ends with CRC field (6304 + 4 hex chars)', () => {
+    const payload = generatePixPayload(baseParams)
+    const crcPart = payload.slice(-8)
+    expect(crcPart.startsWith('6304')).toBe(true)
+    expect(crcPart.slice(4)).toMatch(/^[0-9A-F]{4}$/)
+  })
 
-  const startOk = payload.startsWith('000201')
-  const crcPart = payload.slice(-8)
-  const endOk = crcPart.startsWith('6304') && /^[0-9A-F]{4}$/.test(crcPart.slice(4))
+  it('contains br.gov.bcb.pix GUI', () => {
+    const payload = generatePixPayload(baseParams)
+    expect(payload).toContain('br.gov.bcb.pix')
+  })
 
-  console.log(`✓ Começa com "000201": ${startOk ? 'PASS' : 'FAIL'}`)
-  console.log(`✓ Termina com "6304" + 4 chars hex: ${endOk ? 'PASS' : 'FAIL'}`)
+  it('contains the Pix key', () => {
+    const payload = generatePixPayload(baseParams)
+    expect(payload).toContain('fulano@email.com')
+  })
 
-  if (startOk && endOk) {
-    console.log('\n✅ Todos os testes passaram!')
-  } else {
-    console.error('\n❌ Testes falharam!')
-    process.exit(1)
-  }
-}
+  it('contains country code BR', () => {
+    const payload = generatePixPayload(baseParams)
+    expect(payload).toContain('5802BR')
+  })
 
-runTests()
+  it('contains currency code 986 (BRL)', () => {
+    const payload = generatePixPayload(baseParams)
+    expect(payload).toContain('5303986')
+  })
+
+  it('includes value field when provided', () => {
+    const payload = generatePixPayload({ ...baseParams, value: 10.5 })
+    expect(payload).toContain('5405')
+    expect(payload).toContain('10.50')
+  })
+
+  it('omits value field when not provided', () => {
+    const payload = generatePixPayload(baseParams)
+    expect(payload).not.toMatch(/54\d{2}\d+\.\d{2}/)
+    expect(payload).toMatch(/5303986.*5802BR/)
+  })
+
+  it('uses *** as default txid', () => {
+    const payload = generatePixPayload(baseParams)
+    expect(payload).toContain('***')
+  })
+
+  it('uses custom txid when provided', () => {
+    const payload = generatePixPayload({ ...baseParams, txid: 'PEDIDO001' })
+    expect(payload).toContain('PEDIDO001')
+  })
+
+  it('includes description when provided', () => {
+    const payload = generatePixPayload({ ...baseParams, description: 'Pagamento teste' })
+    expect(payload).toContain('PAGAMENTO TESTE')
+  })
+
+  it('normalizes name (uppercase, no accents)', () => {
+    const payload = generatePixPayload({ ...baseParams, name: 'José' })
+    expect(payload).toContain('JOSE')
+  })
+
+  it('truncates name to 25 chars', () => {
+    const longName = 'A'.repeat(30)
+    const payload = generatePixPayload({ ...baseParams, name: longName })
+    expect(payload).toContain('A'.repeat(25))
+    expect(payload).not.toContain('A'.repeat(26))
+  })
+
+  it('truncates city to 15 chars', () => {
+    const longCity = 'B'.repeat(20)
+    const payload = generatePixPayload({ ...baseParams, city: longCity })
+    expect(payload).toContain('B'.repeat(15))
+    expect(payload).not.toContain('B'.repeat(16))
+  })
+
+  it('has valid CRC16 checksum', () => {
+    const payload = generatePixPayload(baseParams)
+    const payloadWithoutCrc = payload.slice(0, -4)
+    const expectedCrc = crc16(payloadWithoutCrc)
+    const actualCrc = payload.slice(-4)
+    expect(actualCrc).toBe(expectedCrc)
+  })
+
+  it('supports all key types', () => {
+    const cases: { keyType: PixParams['keyType']; key: string; expected: string }[] = [
+      { keyType: 'CPF', key: '12345678900', expected: '12345678900' },
+      { keyType: 'CNPJ', key: '12345678000190', expected: '12345678000190' },
+      { keyType: 'EMAIL', key: 'test@email.com', expected: 'test@email.com' },
+      { keyType: 'TELEFONE', key: '+5511999998888', expected: '+5511999998888' },
+      { keyType: 'ALEATORIA', key: 'abc-123-uuid', expected: 'abc-123-uuid' },
+    ]
+    for (const { keyType, key, expected } of cases) {
+      const payload = generatePixPayload({ ...baseParams, keyType, key })
+      expect(payload).toContain(expected)
+    }
+  })
+
+  it('strips formatting from CPF key', () => {
+    const payload = generatePixPayload({ ...baseParams, keyType: 'CPF', key: '123.456.789-00' })
+    expect(payload).toContain('12345678900')
+    expect(payload).not.toContain('123.456.789-00')
+  })
+
+  it('strips formatting from CNPJ key', () => {
+    const payload = generatePixPayload({ ...baseParams, keyType: 'CNPJ', key: '12.345.678/0001-90' })
+    expect(payload).toContain('12345678000190')
+    expect(payload).not.toContain('12.345.678/0001-90')
+  })
+
+  it('preserves EMAIL key as-is', () => {
+    const payload = generatePixPayload({ ...baseParams, keyType: 'EMAIL', key: 'test@example.com' })
+    expect(payload).toContain('test@example.com')
+  })
+
+  it('preserves TELEFONE key as-is', () => {
+    const payload = generatePixPayload({ ...baseParams, keyType: 'TELEFONE', key: '+5511999998888' })
+    expect(payload).toContain('+5511999998888')
+  })
+})

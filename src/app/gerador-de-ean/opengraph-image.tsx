@@ -1,8 +1,9 @@
-export { ogSize as size, ogContentType as contentType } from '@/lib/og-image'
+import { makeOGImage, ogSize, ogContentType } from '@/lib/og-image'
+
+export const size = ogSize
+export const contentType = ogContentType
 export const runtime = 'edge'
 export const alt = 'Gerador de EAN-13 e EAN-8 Grátis — GeraCode'
-
-import { makeOGImage } from '@/lib/og-image'
 
 export default function OGImage() {
   return makeOGImage(

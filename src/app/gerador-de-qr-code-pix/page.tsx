@@ -1,8 +1,15 @@
 import type { Metadata } from 'next'
-import PixGenerator from './PixGenerator'
+import dynamic from 'next/dynamic'
+import GeneratorSkeleton from '@/components/GeneratorSkeleton'
 import AdSlot from '@/components/AdSlot'
 import FAQSection from '@/components/FAQSection'
 import SchemaMarkup from '@/components/SchemaMarkup'
+import RelatedTools from '@/components/RelatedTools'
+import Breadcrumb from '@/components/Breadcrumb'
+
+const PixGenerator = dynamic(() => import('./PixGenerator'), {
+  loading: () => <GeneratorSkeleton />,
+})
 
 const schemas = [
   {
@@ -44,11 +51,14 @@ const schemas = [
 ]
 
 export const metadata: Metadata = {
-  title: 'Gerador de QR Code Pix Grátis — Crie seu QR Pix Online | GeraCode',
-  description: 'Gere QR Code para pagamento via Pix com chave CPF, CNPJ, e-mail ou aleatória. Payload BR Code gerado no seu navegador, sem cadastro.',
+  title: 'Gerador de QR Code Pix Grátis — Crie seu QR Pix Online',
+  description: 'Gere seu QR Code Pix grátis em segundos. CPF, CNPJ, e-mail ou chave aleatória. Payload BR Code EMV válido. Sem cadastro, 100% privado.',
+  alternates: {
+    canonical: 'https://www.geracodigo.com.br/gerador-de-qr-code-pix',
+  },
   openGraph: {
     title: 'Gerador de QR Code Pix Grátis — Crie seu QR Pix Online | GeraCode',
-    description: 'Gere QR Code para pagamento via Pix com chave CPF, CNPJ, e-mail ou aleatória. Payload BR Code gerado no seu navegador, sem cadastro.',
+    description: 'Gere seu QR Code Pix grátis em segundos. CPF, CNPJ, e-mail ou chave aleatória. Payload BR Code EMV válido. Sem cadastro, 100% privado.',
     url: 'https://www.geracodigo.com.br/gerador-de-qr-code-pix',
     type: 'website',
     locale: 'pt_BR',
@@ -66,14 +76,14 @@ export const metadata: Metadata = {
 export default function PixPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <link rel="canonical" href="https://www.geracodigo.com.br/gerador-de-qr-code-pix" />
       <SchemaMarkup schema={schemas} />
       <div className="flex justify-center mb-6">
         <AdSlot slot="pix-top" format="horizontal" />
       </div>
 
+      <Breadcrumb current="Gerador de QR Code Pix" />
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerador de QR Code Pix</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerador de QR Code Pix Grátis Online</h1>
         <p className="text-gray-600">Gere QR Code Pix estático válido (payload BR Code EMV, padrão Banco Central do Brasil)</p>
         <p className="text-sm text-indigo-600 mt-1">🔒 Gerado direto no seu navegador — seus dados nunca saem do seu computador</p>
       </div>
@@ -123,6 +133,53 @@ export default function PixPage() {
         </div>
       </section>
 
+      {/* Tipos de Chave Pix */}
+      <section className="mt-16 bg-white rounded-xl border border-gray-200 p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Tipos de Chave Pix Suportados</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[
+            { title: 'CPF', desc: 'Chave vinculada ao CPF do recebedor. Formato: 11 dígitos numéricos (ex: 12345678901). Ideal para pessoas físicas e autônomos.' },
+            { title: 'CNPJ', desc: 'Chave vinculada ao CNPJ da empresa. Formato: 14 dígitos numéricos (ex: 12345678000190). Indicada para empresas e MEIs.' },
+            { title: 'E-mail', desc: 'Endereço de e-mail cadastrado como chave Pix no banco. Aceita qualquer formato de e-mail válido. Prático para profissionais liberais.' },
+            { title: 'Telefone', desc: 'Número de celular com código do país (+55) e DDD. Formato: +5511999999999. Conveniente para pequenos comerciantes e prestadores de serviço.' },
+            { title: 'Chave Aleatória (UUID)', desc: 'Código alfanumérico gerado pelo banco (formato UUID). Ideal quando você não quer expor dados pessoais como CPF ou telefone ao receber pagamentos.' },
+          ].map(({ title, desc }) => (
+            <article key={title}>
+              <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
+              <p className="text-sm text-gray-500">{desc}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* Bancos compatíveis */}
+      <section className="mt-16">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Bancos e Fintechs Compatíveis</h2>
+        <p className="text-gray-600 mb-6">
+          O QR Code Pix gerado pelo GeraCode segue o padrão BR Code EMV do Banco Central e é compatível com <strong>todos</strong> os bancos e fintechs participantes do sistema Pix, incluindo:
+        </p>
+        <div className="flex flex-wrap gap-3">
+          {['Nubank', 'Itaú', 'Bradesco', 'Banco do Brasil', 'Caixa Econômica', 'Santander', 'Inter', 'PagSeguro', 'Mercado Pago', 'C6 Bank', 'BTG Pactual', 'Sicoob', 'Sicredi', 'Banrisul', 'Original', 'Neon', 'PicPay', 'Iti'].map((bank) => (
+            <span key={bank} className="bg-gray-100 text-gray-700 text-sm px-3 py-1.5 rounded-full">
+              {bank}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* Dicas para usar QR Code Pix */}
+      <section className="mt-16 bg-white rounded-xl border border-gray-200 p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Dicas para Usar seu QR Code Pix</h2>
+        <div className="prose prose-gray max-w-none text-gray-600 space-y-4">
+          <ul className="list-disc pl-5 space-y-2">
+            <li><strong>Imprima em tamanho adequado:</strong> Para leitura confiável, imprima o QR Code com pelo menos 3 × 3 cm. Em balcões e totens, prefira 5 × 5 cm ou maior.</li>
+            <li><strong>Use SVG para impressão:</strong> O formato SVG mantém a qualidade em qualquer tamanho, sem pixels ou borrosidade. Ideal para adesivos, placas e materiais gráficos.</li>
+            <li><strong>Teste antes de usar:</strong> Sempre escaneie o QR Code com seu próprio aplicativo bancário para confirmar que os dados estão corretos antes de disponibilizar para clientes.</li>
+            <li><strong>Valor fixo vs. aberto:</strong> Se você vende produtos com preço fixo, defina o valor no gerador. Para doações ou serviços variados, deixe o campo de valor em branco para que o pagador digite.</li>
+          </ul>
+        </div>
+      </section>
+
       <FAQSection items={[
         { question: 'O QR Code Pix gerado aqui é válido?', answer: 'Sim. O payload segue o padrão BR Code EMV definido pelo Banco Central do Brasil. O QR Code é testado com o algoritmo CRC16 e funciona em todos os bancos participantes do Pix.' },
         { question: 'Meus dados ficam salvos em algum servidor?', answer: 'Não. Todo o processamento acontece no seu navegador (client-side). Nenhum dado — chave Pix, nome, valor — é enviado para servidores externos.' },
@@ -130,6 +187,8 @@ export default function PixPage() {
         { question: 'Posso usar este QR Code no meu e-commerce?', answer: 'Sim, para cobranças simples. Basta inserir o QR Code como imagem no seu site ou imprimir para uso físico. Para integração automática com confirmação de pedido, use a API Pix do seu banco.' },
         { question: 'O gerador funciona para Pix com CPF, CNPJ, e-mail e telefone?', answer: 'Sim, todos os tipos de chave Pix são suportados: CPF, CNPJ, e-mail, telefone (com +55) e chave aleatória (UUID).' },
       ]} />
+
+      <RelatedTools currentPath="/gerador-de-qr-code-pix" />
     </div>
   )
 }

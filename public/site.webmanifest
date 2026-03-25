@@ -1,0 +1,36 @@
+{
+  "name": "GeraCode — Gerador de Codigo de Barras, QR Code Pix e SKU",
+  "short_name": "GeraCode",
+  "description": "6 ferramentas gratuitas para lojistas brasileiros: codigo de barras (12 formatos), QR Code Pix, leitor via camera, SKU e mais.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#4f46e5",
+  "background_color": "#f9fafb",
+  "lang": "pt-BR",
+  "categories": ["business", "utilities"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

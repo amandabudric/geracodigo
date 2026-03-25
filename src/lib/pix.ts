@@ -16,9 +16,17 @@ export interface PixParams {
   description?: string
 }
 
-export function generatePixPayload(params: PixParams): string {
-  const { key, name, city, value, txid, description } = params
+function normalizePixKey(keyType: PixParams['keyType'], key: string): string {
+  if (keyType === 'CPF' || keyType === 'CNPJ') {
+    return key.replace(/\D/g, '')
+  }
+  return key
+}
 
+export function generatePixPayload(params: PixParams): string {
+  const { keyType, key, name, city, value, txid, description } = params
+
+  const normalizedKey = normalizePixKey(keyType, key)
   const normalizedName = normalize(name).slice(0, 25)
   const normalizedCity = normalize(city).slice(0, 15)
   const txidValue = (txid && txid.trim()) ? txid.trim().slice(0, 25) : '***'
@@ -28,8 +36,8 @@ export function generatePixPayload(params: PixParams): string {
 
   // ID 26 — Merchant Account Information
   const gui = emvField('00', 'br.gov.bcb.pix')
-  const keyField = emvField('01', key)
-  const descField = description ? emvField('02', description.slice(0, 40)) : ''
+  const keyField = emvField('01', normalizedKey)
+  const descField = description ? emvField('02', normalize(description).slice(0, 40)) : ''
   const f26 = emvField('26', gui + keyField + descField)
 
   // ID 52

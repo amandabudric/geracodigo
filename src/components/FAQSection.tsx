@@ -22,12 +22,12 @@ export default function FAQSection({ items }: FAQSectionProps) {
   }
 
   return (
-    <section className="mt-16">
+    <section className="mt-16" aria-labelledby="faq-heading">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-      <h2 className="text-2xl font-bold text-gray-900 mb-8">Perguntas Frequentes</h2>
+      <h2 id="faq-heading" className="text-2xl font-bold text-gray-900 mb-8">Perguntas Frequentes</h2>
       <div className="space-y-4">
         {items.map((item) => (
           <details
@@ -35,7 +35,7 @@ export default function FAQSection({ items }: FAQSectionProps) {
             className="bg-white border border-gray-200 rounded-xl p-6 group"
           >
             <summary
-              className="font-semibold text-gray-900 cursor-pointer list-none flex justify-between items-center gap-4"
+              className="font-semibold text-gray-900 cursor-pointer list-none flex justify-between items-center gap-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 rounded-lg"
             >
               {item.question}
               <span className="text-indigo-500 text-xl shrink-0 group-open:rotate-45 transition-transform" aria-hidden="true">+</span>

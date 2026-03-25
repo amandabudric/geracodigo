@@ -2,16 +2,66 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
 
 const navLinks = [
-  { href: '/gerador-de-codigo-de-barras', label: 'Código de Barras', shortLabel: 'Barras' },
-  { href: '/gerador-de-ean', label: 'EAN-13 / EAN-8', shortLabel: 'EAN' },
-  { href: '/gerador-de-qr-code-pix', label: 'QR Code Pix', shortLabel: 'Pix' },
-  { href: '/gerador-de-qr-code', label: 'QR Code', shortLabel: 'QR' },
+  { href: '/gerador-de-codigo-de-barras', label: 'Código de Barras' },
+  { href: '/gerador-de-ean', label: 'EAN-13 / EAN-8' },
+  { href: '/gerador-de-qr-code-pix', label: 'QR Code Pix' },
+  { href: '/gerador-de-qr-code', label: 'QR Code' },
+  { href: '/leitor-de-codigo-de-barras', label: 'Leitor' },
+  { href: '/gerador-de-sku', label: 'SKU' },
 ]
 
 export default function Header() {
   const pathname = usePathname()
+  const [menuState, setMenuState] = useState({ open: false, path: pathname })
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  if (menuState.path !== pathname) {
+    setMenuState({ open: false, path: pathname })
+  }
+
+  const menuOpen = menuState.open
+  const setMenuOpen = (open: boolean) => setMenuState({ open, path: pathname })
+
+  useEffect(() => {
+    if (!menuOpen) return
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuState(prev => ({ ...prev, open: false }))
+      }
+    }
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setMenuState(prev => ({ ...prev, open: false }))
+      }
+    }
+    function handleFocusTrap(e: KeyboardEvent) {
+      if (e.key !== 'Tab' || !menuRef.current) return
+      const focusable = menuRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button, [tabindex]:not([tabindex="-1"])'
+      )
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+    document.addEventListener('keydown', handleFocusTrap)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+      document.removeEventListener('keydown', handleFocusTrap)
+    }
+  }, [menuOpen])
 
   return (
     <>
@@ -52,31 +102,58 @@ export default function Header() {
                 })}
               </ul>
             </nav>
-            <nav
-              className="md:hidden flex items-center gap-3 text-xs font-medium text-gray-600"
-              aria-label="Navegação mobile"
-            >
-              <ul role="list" className="flex items-center gap-3">
-                {navLinks.map(({ href, shortLabel }) => {
-                  const isActive = pathname === href
-                  return (
-                    <li key={href}>
-                      <Link
-                        href={href}
-                        aria-current={isActive ? 'page' : undefined}
-                        className={`transition-colors ${
-                          isActive
-                            ? 'text-indigo-600 font-bold'
-                            : 'hover:text-indigo-600'
-                        }`}
-                      >
-                        {shortLabel}
-                      </Link>
-                    </li>
-                  )
-                })}
-              </ul>
-            </nav>
+
+            <div className="md:hidden" ref={menuRef}>
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                aria-expanded={menuOpen}
+                aria-controls="mobile-nav"
+                aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
+                className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                {menuOpen ? (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                ) : (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
+                  </svg>
+                )}
+              </button>
+
+              {menuOpen && (
+                <nav
+                  id="mobile-nav"
+                  className="absolute top-16 left-0 right-0 bg-white border-b border-gray-200 shadow-lg"
+                  aria-label="Navegação mobile"
+                >
+                  <ul role="list" className="px-4 py-3 space-y-1">
+                    {navLinks.map(({ href, label }) => {
+                      const isActive = pathname === href
+                      return (
+                        <li key={href}>
+                          <Link
+                            href={href}
+                            aria-current={isActive ? 'page' : undefined}
+                            className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                              isActive
+                                ? 'bg-indigo-50 text-indigo-600'
+                                : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'
+                            }`}
+                          >
+                            {label}
+                          </Link>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </nav>
+              )}
+            </div>
           </div>
         </div>
       </header>

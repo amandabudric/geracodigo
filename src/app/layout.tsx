@@ -5,26 +5,17 @@ import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? 'G-R41LY0MFHT'
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID
+const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT
 
 const inter = Inter({ subsets: ['latin'] })
 
-const organizationSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: 'GeraCode',
-  url: 'https://www.geracodigo.com.br',
-  description: 'Ferramentas gratuitas para lojistas brasileiros: gerador de QR Code Pix, código de barras EAN e QR Code.',
-  contactPoint: {
-    '@type': 'ContactPoint',
-    contactType: 'customer support',
-    availableLanguage: 'Portuguese',
-  },
-}
-
 export const metadata: Metadata = {
-  title: 'GeraCode — Gerador de Código de Barras e QR Code Pix',
-  description: 'Gerador de código de barras e QR Code Pix para lojistas brasileiros. Gerado direto no seu navegador — seus dados nunca saem do seu computador.',
+  title: {
+    default: 'GeraCode — Gerador de Código de Barras e QR Code Pix Grátis',
+    template: '%s | GeraCode',
+  },
+  description: 'Gerador grátis de código de barras, QR Code e QR Code Pix. Ferramentas online para lojistas brasileiros. 100% privado, sem cadastro.',
   metadataBase: new URL('https://www.geracodigo.com.br'),
   openGraph: {
     siteName: 'GeraCode',
@@ -39,8 +30,7 @@ export const metadata: Metadata = {
     follow: true,
   },
   icons: {
-    icon: [{ url: '/favicon.ico', sizes: 'any' }],
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
   },
   manifest: '/site.webmanifest',
 }
@@ -53,33 +43,38 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <head>
-        <link rel="preconnect" href="https://www.googletagmanager.com" />
-        <link rel="preconnect" href="https://www.google-analytics.com" />
-        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-          strategy="afterInteractive"
-        />
-        <Script id="ga4-init" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${GA_ID}');
-          `}
-        </Script>
+        {GA_ID && (
+          <>
+            <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+            <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
+            <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+            <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script
+              src="/scripts/ga4-init.js"
+              data-ga-id={GA_ID}
+              strategy="afterInteractive"
+            />
+          </>
+        )}
+        {ADSENSE_CLIENT && (
+          <Script
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+            strategy="afterInteractive"
+            crossOrigin="anonymous"
+          />
+        )}
       </head>
       <body className={inter.className}>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-        />
         <Header />
         <main id="main-content" className="min-h-screen bg-gray-50">
           {children}
         </main>
         <Footer />
+        <Script src="/scripts/sw-register.js" strategy="afterInteractive" />
       </body>
     </html>
   )

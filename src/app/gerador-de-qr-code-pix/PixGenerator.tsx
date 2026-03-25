@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import QRCode from 'qrcode'
 import { generatePixPayload, PixParams } from '@/lib/pix'
+import { trackGenerate, trackDownload, trackCopy } from '@/lib/analytics'
 
 type KeyType = PixParams['keyType']
 
@@ -47,6 +48,11 @@ export default function PixGenerator() {
   const [isValid, setIsValid] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => {
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current)
+  }, [])
 
   const clearFieldError = (field: keyof FieldErrors) => {
     setFieldErrors(prev => {
@@ -59,18 +65,37 @@ export default function PixGenerator() {
 
   const handleGenerate = useCallback(async () => {
     const errors: FieldErrors = {}
-    if (!key.trim()) errors.key = 'Informe a chave Pix'
+    const trimmedKey = key.trim()
+    if (!trimmedKey) {
+      errors.key = 'Informe a chave Pix'
+    } else {
+      const digitsOnly = trimmedKey.replace(/\D/g, '')
+      if (keyType === 'CPF' && digitsOnly.length !== 11) {
+        errors.key = 'CPF deve ter 11 dígitos'
+      } else if (keyType === 'CNPJ' && digitsOnly.length !== 14) {
+        errors.key = 'CNPJ deve ter 14 dígitos'
+      } else if (keyType === 'EMAIL' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedKey)) {
+        errors.key = 'Informe um e-mail válido'
+      } else if (keyType === 'TELEFONE' && !/^\+\d{10,14}$/.test(trimmedKey)) {
+        errors.key = 'Telefone deve iniciar com + e código do país (ex: +5511999998888)'
+      }
+    }
     if (!name.trim()) errors.name = 'Informe o nome do recebedor'
     if (!city.trim()) errors.city = 'Informe a cidade'
 
     setFieldErrors(errors)
-    if (Object.keys(errors).length > 0) return
+    if (Object.keys(errors).length > 0) {
+      setQrDataUrl('')
+      setPayload('')
+      setIsValid(false)
+      return
+    }
 
     setIsGenerating(true)
     setError('')
     try {
       const parsedValue = value ? parseFloat(value) : undefined
-      const numValue = parsedValue !== undefined
+      const numValue = parsedValue !== undefined && !isNaN(parsedValue)
         ? Math.max(0, Math.min(999999.99, parsedValue))
         : undefined
       const pix = generatePixPayload({
@@ -90,6 +115,7 @@ export default function PixGenerator() {
       })
       setQrDataUrl(dataUrl)
       setIsValid(true)
+      trackGenerate('pix_generator', keyType)
     } catch {
       setError('Erro ao gerar QR Code. Verifique os dados informados.')
       setIsValid(false)
@@ -100,9 +126,23 @@ export default function PixGenerator() {
 
   const handleCopy = async () => {
     if (!payload) return
-    await navigator.clipboard.writeText(payload)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(payload)
+      setCopied(true)
+    } catch {
+      try {
+        const blob = new Blob([payload], { type: 'text/plain' })
+        const item = new ClipboardItem({ 'text/plain': blob })
+        await navigator.clipboard.write([item])
+        setCopied(true)
+      } catch {
+        setError('Não foi possível copiar. Selecione o texto do payload manualmente.')
+        return
+      }
+    }
+    trackCopy('pix_generator', 'payload')
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current)
+    copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
   }
 
   const handleDownloadPng = () => {
@@ -110,7 +150,11 @@ export default function PixGenerator() {
     const a = document.createElement('a')
     a.href = qrDataUrl
     a.download = 'qr-pix.png'
+    a.style.display = 'none'
+    document.body.appendChild(a)
     a.click()
+    document.body.removeChild(a)
+    trackDownload('pix_generator', 'pix', 'png')
   }
 
   const handleDownloadSvg = async () => {
@@ -121,8 +165,12 @@ export default function PixGenerator() {
     const a = document.createElement('a')
     a.href = url
     a.download = 'qr-pix.svg'
+    a.style.display = 'none'
+    document.body.appendChild(a)
     a.click()
+    document.body.removeChild(a)
     URL.revokeObjectURL(url)
+    trackDownload('pix_generator', 'pix', 'svg')
   }
 
   return (
@@ -132,7 +180,7 @@ export default function PixGenerator() {
         <h2 className="text-lg font-semibold text-gray-900 mb-1">Dados do Pix</h2>
         <p className="text-xs text-gray-400 mb-4">Campos com <span className="text-red-500">*</span> são obrigatórios</p>
 
-        <fieldset className="space-y-4 border-0 p-0 m-0">
+        <fieldset className="space-y-4 border-0 p-0 m-0" onKeyDown={e => { if (e.key === 'Enter' && !isGenerating) handleGenerate() }}>
           <legend className="sr-only">Dados do Pix</legend>
 
           {/* Tipo de chave */}
@@ -238,6 +286,7 @@ export default function PixGenerator() {
               type="number"
               value={value}
               onChange={e => setValue(e.target.value)}
+              onKeyDown={e => { if (e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '-') e.preventDefault() }}
               placeholder="0.00"
               min="0"
               step="0.01"
@@ -296,6 +345,7 @@ export default function PixGenerator() {
           <h2 className="text-lg font-semibold text-gray-900 self-start">Preview do QR Code</h2>
           {qrDataUrl ? (
             <>
+              {/* eslint-disable-next-line @next/next/no-img-element -- data URL gerada dinamicamente, next/image nao aplica */}
               <img
                 src={qrDataUrl}
                 alt="QR Code Pix gerado com payload BR Code válido"
