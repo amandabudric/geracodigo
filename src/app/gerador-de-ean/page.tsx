@@ -1,15 +1,10 @@
 import type { Metadata } from 'next'
-import dynamic from 'next/dynamic'
-import GeneratorSkeleton from '@/components/GeneratorSkeleton'
+import EanGenerator from './EanGenerator'
 import FAQSection from '@/components/FAQSection'
 import AdSlot from '@/components/AdSlot'
 import SchemaMarkup from '@/components/SchemaMarkup'
 import RelatedTools from '@/components/RelatedTools'
 import Breadcrumb from '@/components/Breadcrumb'
-
-const EanGenerator = dynamic(() => import('./EanGenerator'), {
-  loading: () => <GeneratorSkeleton />,
-})
 
 const schemas = [
   {

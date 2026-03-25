@@ -1,16 +1,11 @@
 import type { Metadata } from 'next'
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import GeneratorSkeleton from '@/components/GeneratorSkeleton'
+import QrGenerator from './QrGenerator'
 import FAQSection from '@/components/FAQSection'
 import AdSlot from '@/components/AdSlot'
 import SchemaMarkup from '@/components/SchemaMarkup'
 import RelatedTools from '@/components/RelatedTools'
 import Breadcrumb from '@/components/Breadcrumb'
-
-const QrGenerator = dynamic(() => import('./QrGenerator'), {
-  loading: () => <GeneratorSkeleton />,
-})
 
 const schemas = [
   {

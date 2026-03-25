@@ -1,15 +1,10 @@
 import type { Metadata } from 'next'
-import dynamic from 'next/dynamic'
-import GeneratorSkeleton from '@/components/GeneratorSkeleton'
+import PixGenerator from './PixGenerator'
 import AdSlot from '@/components/AdSlot'
 import FAQSection from '@/components/FAQSection'
 import SchemaMarkup from '@/components/SchemaMarkup'
 import RelatedTools from '@/components/RelatedTools'
 import Breadcrumb from '@/components/Breadcrumb'
-
-const PixGenerator = dynamic(() => import('./PixGenerator'), {
-  loading: () => <GeneratorSkeleton />,
-})
 
 const schemas = [
   {

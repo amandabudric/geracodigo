@@ -1,15 +1,10 @@
 import type { Metadata } from 'next'
-import dynamic from 'next/dynamic'
-import GeneratorSkeleton from '@/components/GeneratorSkeleton'
+import BarcodeGenerator from './BarcodeGenerator'
 import AdSlot from '@/components/AdSlot'
 import FAQSection from '@/components/FAQSection'
 import SchemaMarkup from '@/components/SchemaMarkup'
 import RelatedTools from '@/components/RelatedTools'
 import Breadcrumb from '@/components/Breadcrumb'
-
-const BarcodeGenerator = dynamic(() => import('./BarcodeGenerator'), {
-  loading: () => <GeneratorSkeleton />,
-})
 
 const schemas = [
   {
