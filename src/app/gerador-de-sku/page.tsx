@@ -70,7 +70,7 @@ const schemas = [
 ]
 
 export const metadata: Metadata = {
-  title: 'Gerador de SKU Grátis | Crie Códigos SKU para Produtos',
+  title: 'Gerador de SKU Grátis | Códigos para Estoque',
   description: 'Gerador de SKU grátis para controle de estoque. Defina prefixo, categoria, cor, tamanho e gere até 500 SKUs de uma vez. Exportação CSV. Sem cadastro.',
   alternates: {
     canonical: 'https://www.geracodigo.com.br/gerador-de-sku',

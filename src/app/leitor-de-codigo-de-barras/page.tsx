@@ -68,7 +68,7 @@ const schemas = [
 ]
 
 export const metadata: Metadata = {
-  title: 'Leitor de Código de Barras Online Grátis | Leia pela Câmera',
+  title: 'Leitor de Código de Barras Online Grátis',
   description: 'Leitor de código de barras online grátis. Use a câmera do celular ou computador para ler EAN-13, Code 128, QR Code e mais. Sem instalar aplicativo, 100% no navegador.',
   alternates: {
     canonical: 'https://www.geracodigo.com.br/leitor-de-codigo-de-barras',

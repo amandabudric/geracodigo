@@ -64,7 +64,7 @@ const schemas = [
 ]
 
 export const metadata: Metadata = {
-  title: 'Gerador de QR Code Pix Grátis | Crie seu QR Pix Online',
+  title: 'Gerador de QR Code Pix Grátis | Crie seu QR Pix',
   description: 'Gere seu QR Code Pix grátis em segundos. CPF, CNPJ, e-mail ou chave aleatória. Payload BR Code EMV válido. Sem cadastro, 100% privado.',
   alternates: {
     canonical: 'https://www.geracodigo.com.br/gerador-de-qr-code-pix',
@@ -98,7 +98,7 @@ export default function PixPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerador de QR Code Pix Grátis Online</h1>
         <p className="text-gray-600">Gere QR Code Pix estático válido (payload BR Code EMV, padrão Banco Central do Brasil)</p>
-        <p className="text-sm text-indigo-600 mt-1">🔒 Gerado direto no seu navegador. Seus dados nunca saem do seu computador</p>
+        <p className="text-sm text-indigo-600 mt-1"><span aria-hidden="true">{'\u{1F512}'}</span> Gerado direto no seu navegador. Seus dados nunca saem do seu computador</p>
         <LastUpdated date={LAST_UPDATED} />
       </div>
 

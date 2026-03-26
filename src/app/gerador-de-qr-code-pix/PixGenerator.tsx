@@ -170,7 +170,7 @@ export default function PixGenerator() {
         <h2 className="text-lg font-semibold text-gray-900 mb-1">Dados do Pix</h2>
         <p className="text-xs text-gray-400 mb-4">Campos com <span className="text-red-500">*</span> são obrigatórios</p>
 
-        <fieldset className="space-y-4 border-0 p-0 m-0" onKeyDown={e => { if (e.key === 'Enter' && !isGenerating) handleGenerate() }}>
+        <fieldset className="space-y-4 border-0 p-0 m-0" onKeyDown={e => { if (e.key === 'Enter' && !isGenerating && (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) handleGenerate() }}>
           <legend className="sr-only">Dados do Pix</legend>
 
           {/* Tipo de chave */}

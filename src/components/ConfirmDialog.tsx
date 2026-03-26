@@ -22,14 +22,14 @@ export default function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const confirmBtnRef = useRef<HTMLButtonElement>(null)
+  const cancelBtnRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
     if (open && !dialog.open) {
       dialog.showModal()
-      confirmBtnRef.current?.focus()
+      cancelBtnRef.current?.focus()
     } else if (!open && dialog.open) {
       dialog.close()
     }
@@ -62,13 +62,13 @@ export default function ConfirmDialog({
       <p className="text-sm text-gray-600 mb-6">{message}</p>
       <div className="flex gap-3 justify-end">
         <button
+          ref={cancelBtnRef}
           onClick={handleCancel}
           className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
         >
           {cancelLabel}
         </button>
         <button
-          ref={confirmBtnRef}
           onClick={onConfirm}
           className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
         >

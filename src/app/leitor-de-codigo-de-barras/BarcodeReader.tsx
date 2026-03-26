@@ -100,6 +100,7 @@ export default function BarcodeReader() {
           setResults(prev => {
             if (prev.some(r => r.value === bc.rawValue)) return prev
             trackScan(bc.format)
+            try { navigator.vibrate?.(100) } catch { /* vibration not supported */ }
             return [{ value: bc.rawValue, format: bc.format, timestamp: Date.now() }, ...prev].slice(0, 50)
           })
         }

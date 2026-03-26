@@ -5,6 +5,8 @@ import QRCode from 'qrcode'
 import { trackGenerate, trackDownload } from '@/lib/analytics'
 import { downloadDataUrl, downloadBlob } from '@/lib/download'
 
+type ExportState = 'idle' | 'pdf'
+
 const SIZES = [200, 300, 400, 500]
 
 export default function QrGenerator() {
@@ -14,6 +16,7 @@ export default function QrGenerator() {
   const [lightColor, setLightColor] = useState('#ffffff')
   const [qrDataUrl, setQrDataUrl] = useState('')
   const [error, setError] = useState('')
+  const [exporting, setExporting] = useState<ExportState>('idle')
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const hasTrackedRef = useRef(false)
 
@@ -56,6 +59,25 @@ export default function QrGenerator() {
       trackDownload('qr_code_generator', 'qr_code', 'svg')
     } catch {
       setError('Erro ao gerar SVG. Tente baixar em PNG.')
+    }
+  }
+
+  const downloadPdf = async () => {
+    if (!qrDataUrl) return
+    setExporting('pdf')
+    try {
+      const jsPDF = (await import('jspdf')).jsPDF
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+      const imgSize = 80
+      const x = (210 - imgSize) / 2
+      const y = 30
+      doc.addImage(qrDataUrl, 'PNG', x, y, imgSize, imgSize)
+      doc.save('qrcode.pdf')
+      trackDownload('qr_code_generator', 'qr_code', 'pdf')
+    } catch {
+      setError('Erro ao gerar PDF. Tente baixar em PNG.')
+    } finally {
+      setExporting('idle')
     }
   }
 
@@ -110,8 +132,9 @@ export default function QrGenerator() {
             {/* eslint-disable-next-line @next/next/no-img-element -- data URL gerada dinamicamente, next/image nao aplica */}
             <img src={qrDataUrl} alt="Preview do QR Code gerado" width={200} height={200} className="rounded-lg max-w-[200px]" />
             <div className="flex gap-2 w-full">
-              <button onClick={downloadPng} aria-label="Baixar QR Code em formato PNG" className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">Download PNG</button>
-              <button onClick={downloadSvg} aria-label="Baixar QR Code em formato SVG" className="flex-1 bg-white border border-indigo-600 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors">Download SVG</button>
+              <button onClick={downloadPng} disabled={exporting !== 'idle'} aria-label="Baixar QR Code em formato PNG" className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50">PNG</button>
+              <button onClick={downloadSvg} disabled={exporting !== 'idle'} aria-label="Baixar QR Code em formato SVG" className="flex-1 bg-white border border-indigo-600 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors disabled:opacity-50">SVG</button>
+              <button onClick={downloadPdf} disabled={exporting !== 'idle'} aria-label="Baixar QR Code em formato PDF" className="flex-1 bg-white border border-indigo-600 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors disabled:opacity-50">{exporting === 'pdf' ? 'Gerando…' : 'PDF'}</button>
             </div>
           </>
         ) : (

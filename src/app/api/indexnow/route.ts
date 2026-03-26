@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-const INDEXNOW_KEY = 'dc2556c8e22e4d389f91329f8d9b9ceb'
+const INDEXNOW_KEY = process.env.INDEXNOW_KEY ?? 'dc2556c8e22e4d389f91329f8d9b9ceb'
 const HOST = 'https://www.geracodigo.com.br'
 const SITEMAP_URL = `${HOST}/sitemap.xml`
 

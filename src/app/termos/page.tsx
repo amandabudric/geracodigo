@@ -30,6 +30,15 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://www.geracodigo.com.br/termos',
   },
+  openGraph: {
+    title: 'Termos de Uso | GeraCode',
+    description: 'Condições de uso das ferramentas gratuitas de geração de código de barras e QR Code.',
+    url: 'https://www.geracodigo.com.br/termos',
+    type: 'website',
+    locale: 'pt_BR',
+    siteName: 'GeraCode',
+    images: [{ url: '/termos/opengraph-image', width: 1200, height: 630, alt: 'Termos de Uso | GeraCode' }],
+  },
   robots: {
     index: true,
     follow: true,

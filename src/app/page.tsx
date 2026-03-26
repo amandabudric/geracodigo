@@ -22,7 +22,7 @@ const schemas = [
     url: 'https://www.geracodigo.com.br',
     logo: 'https://www.geracodigo.com.br/logo.svg',
     description: 'Ferramentas gratuitas de geração de código de barras, QR Code Pix e SKU para lojistas brasileiros',
-    foundingDate: '2026',
+    foundingDate: '2026-01-01',
   },
   {
     '@context': 'https://schema.org',
@@ -42,7 +42,7 @@ const schemas = [
 ]
 
 export const metadata: Metadata = {
-  title: 'GeraCode | Gerador de Código de Barras, QR Code Pix, Leitor e SKU Grátis',
+  title: { absolute: 'GeraCode | Código de Barras, QR Code Pix, EAN, Leitor e SKU Grátis' },
   description: 'Gerador grátis de código de barras (12+ formatos), QR Code Pix, leitor de código de barras via câmera e gerador de SKU. Geração em lote, PDF, etiquetas. 100% privado, sem cadastro.',
   alternates: {
     canonical: 'https://www.geracodigo.com.br/',

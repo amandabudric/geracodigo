@@ -71,7 +71,7 @@ const schemas = [
 ]
 
 export const metadata: Metadata = {
-  title: 'Gerador de Código de Barras Grátis | EAN-13, Code 128, UPC-A, ITF-14 e 12+ Formatos',
+  title: 'Gerador de Código de Barras Grátis | 12 Formatos',
   description: 'Gerador grátis de código de barras com 12 formatos: EAN-13, Code 128, Code 93, UPC-A, ITF-14, Codabar, MSI e mais. Geração em lote, download PNG, SVG e PDF, impressão de etiquetas. Sem cadastro, 100% privado.',
   alternates: {
     canonical: 'https://www.geracodigo.com.br/gerador-de-codigo-de-barras',

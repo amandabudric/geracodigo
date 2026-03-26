@@ -30,6 +30,15 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://www.geracodigo.com.br/privacidade',
   },
+  openGraph: {
+    title: 'Política de Privacidade | GeraCode',
+    description: 'Saiba como o GeraCode trata seus dados. Processamento 100% local, sem coleta de dados pessoais.',
+    url: 'https://www.geracodigo.com.br/privacidade',
+    type: 'website',
+    locale: 'pt_BR',
+    siteName: 'GeraCode',
+    images: [{ url: '/privacidade/opengraph-image', width: 1200, height: 630, alt: 'Política de Privacidade | GeraCode' }],
+  },
   robots: {
     index: true,
     follow: true,

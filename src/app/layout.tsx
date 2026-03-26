@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
@@ -36,6 +36,10 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
 }
 
+export const viewport: Viewport = {
+  themeColor: '#4f46e5',
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -46,7 +50,9 @@ export default function RootLayout({
       <head>
         {GA_ID && (
           <>
+            <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
             <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+            <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
             <link rel="dns-prefetch" href="https://www.google-analytics.com" />
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}

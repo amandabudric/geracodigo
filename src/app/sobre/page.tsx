@@ -26,7 +26,7 @@ const schemas = [
 ]
 
 export const metadata: Metadata = {
-  title: 'Sobre o GeraCode | Ferramentas Gratuitas para Lojistas Brasileiros',
+  title: 'Sobre | Ferramentas Gratuitas para Lojistas',
   description: 'Conheça o GeraCode: plataforma gratuita e 100% privada de geração de código de barras e QR Code Pix para lojistas e empreendedores brasileiros.',
   alternates: {
     canonical: 'https://www.geracodigo.com.br/sobre',
@@ -38,6 +38,7 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'pt_BR',
     siteName: 'GeraCode',
+    images: [{ url: '/sobre/opengraph-image', width: 1200, height: 630, alt: 'Sobre o GeraCode | Ferramentas Gratuitas para Lojistas' }],
   },
 }
 

@@ -42,9 +42,15 @@ export function downloadPngFromElement(
       svgW = svgElement.width.baseVal.value || bbox.width + bbox.x * 2
       svgH = svgElement.height.baseVal.value || bbox.height + bbox.y * 2
     } catch {
-      svgW = svgElement.width.baseVal.value || 300
-      svgH = svgElement.height.baseVal.value || 150
+      svgW = svgElement.width.baseVal.value
+        || parseFloat(svgElement.getAttribute('width') ?? '0')
+        || 300
+      svgH = svgElement.height.baseVal.value
+        || parseFloat(svgElement.getAttribute('height') ?? '0')
+        || 150
     }
+    if (svgW <= 0) svgW = 300
+    if (svgH <= 0) svgH = 150
     const width = Math.round(svgW * scale)
     const height = Math.round(svgH * scale)
 

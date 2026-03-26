@@ -3,6 +3,7 @@ import { MetadataRoute } from 'next'
 export const dynamic = 'force-static'
 
 const BASE = 'https://www.geracodigo.com.br'
+const LAST_MODIFIED = new Date().toISOString()
 
 const pages: Array<{
   path: string
@@ -22,11 +23,9 @@ const pages: Array<{
 ]
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const lastModified = new Date().toISOString()
-
   return pages.map(({ path, changeFrequency, priority }) => ({
     url: `${BASE}${path}`,
-    lastModified,
+    lastModified: LAST_MODIFIED,
     changeFrequency,
     priority,
   }))

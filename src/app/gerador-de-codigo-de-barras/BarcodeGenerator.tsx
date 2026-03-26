@@ -150,8 +150,8 @@ export default function BarcodeGenerator() {
     })
 
     const successResults = results.filter(r => !r.error)
-    if (successResults.length > 0) {
-      addToHistory(successResults[0].value, format)
+    for (const r of successResults) {
+      addToHistory(r.value, format)
     }
     setBatchResults(results)
     trackBatchGenerate('barcode_generator', format, results.filter(r => !r.error).length)

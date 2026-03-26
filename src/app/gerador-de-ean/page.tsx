@@ -97,7 +97,7 @@ export default function EanPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerador de EAN-13 e EAN-8 Grátis Online</h1>
         <p className="text-gray-600">Crie códigos EAN para produtos, e-commerce e varejo. Geração instantânea no navegador.</p>
-        <p className="text-sm text-indigo-600 mt-1">🔒 Gerado direto no seu navegador. Seus dados nunca saem do seu computador</p>
+        <p className="text-sm text-indigo-600 mt-1"><span aria-hidden="true">{'\u{1F512}'}</span> Gerado direto no seu navegador. Seus dados nunca saem do seu computador</p>
         <LastUpdated date={LAST_UPDATED} />
       </div>
       <EanGenerator />
