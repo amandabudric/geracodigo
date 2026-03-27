@@ -26,7 +26,7 @@ export default function RelatedTools({ currentPath }: RelatedToolsProps) {
           <Link
             key={href}
             href={href}
-            className="bg-white rounded-xl border border-gray-200 p-5 hover:border-indigo-300 hover:shadow-md transition-all"
+            className="bg-white rounded-xl border border-gray-200 p-5 hover:border-indigo-300 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
           >
             <h3 className="font-semibold text-gray-900 mb-1">{label}</h3>
             <p className="text-sm text-gray-500">{desc}</p>

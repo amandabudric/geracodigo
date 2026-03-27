@@ -8,7 +8,7 @@ import RelatedTools from '@/components/RelatedTools'
 import Breadcrumb from '@/components/Breadcrumb'
 import LastUpdated from '@/components/LastUpdated'
 import GeneratorSkeleton from '@/components/GeneratorSkeleton'
-import { LAST_UPDATED } from '@/lib/constants'
+import { LAST_UPDATED, LAST_UPDATED_ISO } from '@/lib/constants'
 
 const BarcodeGenerator = dynamic(() => import('./BarcodeGenerator'), {
   loading: () => <GeneratorSkeleton />,
@@ -56,6 +56,8 @@ const schemas = [
     description: 'Gere códigos de barras em 12 formatos: Code 128, Code 39, UPC-A, ITF-14, Codabar e mais. Download PNG, SVG e PDF. Sem cadastro.',
     url: 'https://www.geracodigo.com.br/gerador-de-codigo-de-barras',
     inLanguage: 'pt-BR',
+    datePublished: '2026-01-15',
+    dateModified: '2026-03-27',
     isPartOf: { '@id': 'https://www.geracodigo.com.br/#website' },
     about: { '@type': 'Thing', name: 'Código de barras' },
     publisher: { '@id': 'https://www.geracodigo.com.br/#organization' },
@@ -64,7 +66,7 @@ const schemas = [
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br' },
+      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br/' },
       { '@type': 'ListItem', position: 2, name: 'Gerador de Código de Barras', item: 'https://www.geracodigo.com.br/gerador-de-codigo-de-barras' },
     ],
   },
@@ -106,14 +108,14 @@ export default function BarcodePage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerador de Código de Barras Grátis Online</h1>
         <p className="text-gray-600">12 formatos: EAN-13, Code 128, Code 93, UPC-A, ITF-14, Codabar e mais. Geração em lote, PDF e impressão de etiquetas</p>
         <p className="text-sm text-indigo-600 mt-1">Gerado direto no seu navegador. Seus dados nunca saem do seu computador</p>
-        <LastUpdated date={LAST_UPDATED} />
+        <LastUpdated date={LAST_UPDATED} isoDate={LAST_UPDATED_ISO} />
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-1 min-w-0">
           <BarcodeGenerator />
         </div>
-        <aside className="lg:w-[300px]">
+        <aside className="lg:w-[300px] flex justify-center lg:justify-start">
           <AdSlot slot="barcode-sidebar" format="rectangle" />
         </aside>
       </div>
@@ -159,6 +161,10 @@ export default function BarcodePage() {
           ))}
         </div>
       </section>
+
+      <div className="flex justify-center mt-16">
+        <AdSlot slot="barcode-mid" format="responsive" />
+      </div>
 
       {/* Formatos */}
       <section className="mt-16 bg-white rounded-xl border border-gray-200 p-8">

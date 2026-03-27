@@ -7,7 +7,7 @@ import RelatedTools from '@/components/RelatedTools'
 import Breadcrumb from '@/components/Breadcrumb'
 import LastUpdated from '@/components/LastUpdated'
 import GeneratorSkeleton from '@/components/GeneratorSkeleton'
-import { LAST_UPDATED } from '@/lib/constants'
+import { LAST_UPDATED, LAST_UPDATED_ISO } from '@/lib/constants'
 
 const PixGenerator = dynamic(() => import('./PixGenerator'), {
   loading: () => <GeneratorSkeleton />,
@@ -49,6 +49,8 @@ const schemas = [
     description: 'Gere QR Code para pagamento via Pix com chave CPF, CNPJ, e-mail ou aleatória. Payload BR Code EMV válido, gerado no navegador sem cadastro.',
     url: 'https://www.geracodigo.com.br/gerador-de-qr-code-pix',
     inLanguage: 'pt-BR',
+    datePublished: '2026-01-15',
+    dateModified: '2026-03-27',
     isPartOf: { '@id': 'https://www.geracodigo.com.br/#website' },
     about: { '@type': 'Thing', name: 'Pix (Sistema de Pagamentos Instantâneos do Banco Central)' },
     publisher: { '@id': 'https://www.geracodigo.com.br/#organization' },
@@ -57,7 +59,7 @@ const schemas = [
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br' },
+      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br/' },
       { '@type': 'ListItem', position: 2, name: 'Gerador de QR Code Pix', item: 'https://www.geracodigo.com.br/gerador-de-qr-code-pix' },
     ],
   },
@@ -99,14 +101,14 @@ export default function PixPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerador de QR Code Pix Grátis Online</h1>
         <p className="text-gray-600">Gere QR Code Pix estático válido (payload BR Code EMV, padrão Banco Central do Brasil)</p>
         <p className="text-sm text-indigo-600 mt-1"><span aria-hidden="true">{'\u{1F512}'}</span> Gerado direto no seu navegador. Seus dados nunca saem do seu computador</p>
-        <LastUpdated date={LAST_UPDATED} />
+        <LastUpdated date={LAST_UPDATED} isoDate={LAST_UPDATED_ISO} />
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-1 min-w-0">
           <PixGenerator />
         </div>
-        <aside className="lg:w-[300px] flex flex-col gap-6">
+        <aside className="lg:w-[300px] flex flex-col items-center lg:items-start gap-6">
           <AdSlot slot="pix-sidebar" format="rectangle" />
           <section className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800" aria-labelledby="info-cobrancas">
             <h3 id="info-cobrancas" className="font-semibold mb-1"><span aria-hidden="true">ℹ️</span> Cobranças Estáticas</h3>
@@ -165,6 +167,10 @@ export default function PixPage() {
           ))}
         </div>
       </section>
+
+      <div className="flex justify-center mt-16">
+        <AdSlot slot="pix-mid" format="responsive" />
+      </div>
 
       {/* Bancos compatíveis */}
       <section className="mt-16">

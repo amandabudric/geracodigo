@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { downloadSvgFromElement, downloadPngFromElement } from '@/lib/download'
+import { downloadSvgFromElement, downloadPngFromElement, exportSvgsToPdf } from '@/lib/download'
 import { calculateEan13CheckDigit, calculateEan8CheckDigit } from '@/lib/ean-check-digit'
 import { addToHistory } from '@/lib/barcode-history'
 import { trackGenerate, trackDownload } from '@/lib/analytics'
+import ExportActions from '@/components/ExportActions'
 
 type JsBarcodeFn = (
   element: SVGSVGElement | string | null,
@@ -18,7 +19,7 @@ export default function EanGenerator() {
   const [error, setError] = useState('')
   const [generated, setGenerated] = useState(false)
   const [checkDigitHint, setCheckDigitHint] = useState('')
-  const [isExporting, setIsExporting] = useState(false)
+  const [exportingFormat, setExportingFormat] = useState<'png' | 'pdf' | null>(null)
   const [barcodeReady, setBarcodeReady] = useState(false)
   const svgRef = useRef<SVGSVGElement>(null)
   const jsBarcodeRef = useRef<JsBarcodeFn | null>(null)
@@ -86,120 +87,108 @@ export default function EanGenerator() {
 
   const downloadPng = async () => {
     if (!svgRef.current) return
-    setIsExporting(true)
+    setExportingFormat('png')
     try {
       await downloadPngFromElement(svgRef.current, `${format.toLowerCase()}-barcode.png`)
       trackDownload('ean_generator', format, 'png')
     } catch {
       setError('Erro ao gerar PNG. Tente baixar em SVG.')
     } finally {
-      setIsExporting(false)
+      setExportingFormat(null)
     }
   }
 
   const downloadPdf = async () => {
     if (!svgRef.current) return
-    setIsExporting(true)
+    setExportingFormat('pdf')
     try {
-      const jsPDF = (await import('jspdf')).jsPDF
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-      const svgStr = new XMLSerializer().serializeToString(svgRef.current)
-      const canvas = document.createElement('canvas')
-      canvas.width = 800
-      canvas.height = 300
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
-
-      const imageLoaded = await new Promise<boolean>((resolve) => {
-        const img = new Image()
-        const blob = new Blob([svgStr], { type: 'image/svg+xml' })
-        const url = URL.createObjectURL(blob)
-        img.onload = () => {
-          ctx.fillStyle = '#fff'
-          ctx.fillRect(0, 0, 800, 300)
-          ctx.drawImage(img, 0, 0, 800, 300)
-          URL.revokeObjectURL(url)
-          resolve(true)
-        }
-        img.onerror = () => { URL.revokeObjectURL(url); resolve(false) }
-        img.src = url
-      })
-
-      if (!imageLoaded) {
-        setError('Erro ao gerar PDF. Tente baixar em PNG ou SVG.')
-        return
-      }
-
-      const imgData = canvas.toDataURL('image/png')
-      doc.addImage(imgData, 'PNG', 65, 20, 80, 30)
-      doc.save(`${format.toLowerCase()}-barcode.pdf`)
+      await exportSvgsToPdf([svgRef.current], `${format.toLowerCase()}-barcode.pdf`)
       trackDownload('ean_generator', format, 'pdf')
     } catch {
       setError('Erro ao gerar PDF. Tente baixar em PNG ou SVG.')
     } finally {
-      setIsExporting(false)
+      setExportingFormat(null)
     }
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-      <div className="flex gap-4">
-        {(['EAN13', 'EAN8'] as const).map(f => (
-          <label key={f} className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              value={f}
-              checked={format === f}
-              onChange={() => { setFormat(f); setInput(''); setGenerated(false); setError('') }}
-              className="accent-indigo-600"
-            />
-            <span className="font-medium text-sm">{f === 'EAN13' ? 'EAN-13 (13 dígitos)' : 'EAN-8 (8 dígitos)'}</span>
-          </label>
-        ))}
-      </div>
-
-      <div>
-        <label htmlFor="ean-input" className="block text-sm font-medium text-gray-700 mb-1">
-          Número ({expectedDigits} dígitos ou {shortDigits} para cálculo automático)
-        </label>
-        <input
-          id="ean-input"
-          type="text"
-          value={input}
-          onChange={e => { setInput(e.target.value.replace(/\D/g, '')); setError('') }}
-          onKeyDown={e => { if (e.key === 'Enter') generate() }}
-          placeholder={format === 'EAN13' ? '789123456789 ou 7891234567890' : '1234567 ou 12345670'}
-          inputMode="numeric"
-          pattern="[0-9]*"
-          maxLength={expectedDigits}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-        {checkDigitHint && (
-          <p className="text-green-600 text-xs mt-1">{checkDigitHint}</p>
-        )}
-        {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-      </div>
-
-      <button
-        onClick={generate}
-        disabled={!barcodeReady}
-        className="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
-      >
-        {barcodeReady ? `Gerar ${format === 'EAN13' ? 'EAN-13' : 'EAN-8'}` : 'Carregando…'}
-      </button>
-
-      <div className="border border-gray-100 rounded-lg p-4 bg-gray-50 flex flex-col items-center gap-4 min-h-[160px] justify-center">
-        <svg ref={svgRef} className={generated ? '' : 'hidden'} aria-label={`Código de barras ${format} gerado`} role="img" />
-        {!generated && <p className="text-gray-400 text-sm">O código aparecerá aqui</p>}
-      </div>
-
-      {generated && (
-        <div className="grid grid-cols-3 gap-2">
-          <button onClick={downloadPng} disabled={isExporting} aria-label="Baixar PNG" className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50">PNG</button>
-          <button onClick={downloadSvg} disabled={isExporting} aria-label="Baixar SVG" className="bg-white border border-indigo-600 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors disabled:opacity-50">SVG</button>
-          <button onClick={downloadPdf} disabled={isExporting} aria-label="Baixar PDF" className="bg-white border border-indigo-600 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors disabled:opacity-50">{isExporting ? 'Gerando…' : 'PDF'}</button>
+    <div className="flex flex-col lg:flex-row gap-8">
+      {/* Form */}
+      <div className="flex-1 bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+        <div className="flex gap-4" role="radiogroup" aria-label="Formato EAN">
+          {(['EAN13', 'EAN8'] as const).map(f => (
+            <label key={f} className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="ean-format"
+                value={f}
+                checked={format === f}
+                onChange={() => { setFormat(f); setInput(''); setGenerated(false); setError('') }}
+                className="accent-indigo-600"
+              />
+              <span className="font-medium text-sm">{f === 'EAN13' ? 'EAN-13 (13 dígitos)' : 'EAN-8 (8 dígitos)'}</span>
+            </label>
+          ))}
         </div>
-      )}
+
+        <div>
+          <label htmlFor="ean-input" className="block text-sm font-medium text-gray-700 mb-1">
+            Número ({expectedDigits} dígitos ou {shortDigits} para cálculo automático)
+          </label>
+          <input
+            id="ean-input"
+            type="text"
+            value={input}
+            onChange={e => { setInput(e.target.value.replace(/\D/g, '')); setError('') }}
+            onKeyDown={e => { if (e.key === 'Enter') generate() }}
+            placeholder={format === 'EAN13' ? '789123456789 ou 7891234567890' : '1234567 ou 12345670'}
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={expectedDigits}
+            aria-describedby={checkDigitHint ? 'ean-check-digit-hint' : undefined}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          {checkDigitHint && (
+            <p id="ean-check-digit-hint" className="text-green-600 text-xs mt-1">{checkDigitHint}</p>
+          )}
+          {error && <p className="text-red-600 text-xs mt-1" role="alert">{error}</p>}
+        </div>
+
+        <button
+          onClick={generate}
+          disabled={!barcodeReady}
+          className="w-full bg-indigo-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+        >
+          {barcodeReady ? `Gerar ${format === 'EAN13' ? 'EAN-13' : 'EAN-8'}` : 'Carregando…'}
+        </button>
+      </div>
+
+      {/* Preview */}
+      <div className="flex-1 bg-white rounded-xl border border-gray-200 p-6 flex flex-col items-center gap-4">
+        <h2 className="text-lg font-semibold text-gray-900 self-start">Preview do código</h2>
+
+        <div className="sr-only" aria-live="polite" aria-atomic="true">
+          {generated ? `Código ${format === 'EAN13' ? 'EAN-13' : 'EAN-8'} gerado com sucesso` : ''}
+        </div>
+
+        <div className="border border-gray-100 rounded-lg p-4 bg-gray-50 flex flex-col items-center gap-4 min-h-[160px] justify-center w-full">
+          <svg ref={svgRef} className={generated ? 'animate-fade-in' : 'hidden'} aria-label={`Código de barras ${format} gerado`} role="img" />
+          {!generated && <p className="text-gray-400 text-sm">O código aparecerá aqui</p>}
+        </div>
+
+        {generated && (
+          <div className="w-full">
+            <ExportActions
+              disabled={exportingFormat !== null}
+              actions={[
+                { label: 'PNG', ariaLabel: 'Baixar PNG', onClick: downloadPng, variant: 'primary', loading: exportingFormat === 'png' },
+                { label: 'SVG', ariaLabel: 'Baixar SVG', onClick: downloadSvg, variant: 'secondary' },
+                { label: 'PDF', ariaLabel: 'Baixar PDF', onClick: downloadPdf, variant: 'secondary', loading: exportingFormat === 'pdf', loadingLabel: 'Gerando…' },
+              ]}
+            />
+          </div>
+        )}
+      </div>
     </div>
   )
 }

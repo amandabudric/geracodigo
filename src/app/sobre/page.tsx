@@ -11,6 +11,8 @@ const schemas = [
     description: 'Conheça o GeraCode, plataforma gratuita de geração de código de barras e QR Code Pix para lojistas brasileiros.',
     url: 'https://www.geracodigo.com.br/sobre',
     inLanguage: 'pt-BR',
+    datePublished: '2026-01-15',
+    dateModified: '2026-03-01',
     isPartOf: { '@id': 'https://www.geracodigo.com.br/#website' },
     publisher: { '@id': 'https://www.geracodigo.com.br/#organization' },
     mainEntity: { '@id': 'https://www.geracodigo.com.br/#organization' },
@@ -19,7 +21,7 @@ const schemas = [
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br' },
+      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br/' },
       { '@type': 'ListItem', position: 2, name: 'Sobre', item: 'https://www.geracodigo.com.br/sobre' },
     ],
   },
@@ -39,6 +41,12 @@ export const metadata: Metadata = {
     locale: 'pt_BR',
     siteName: 'GeraCode',
     images: [{ url: '/sobre/opengraph-image', width: 1200, height: 630, alt: 'Sobre o GeraCode | Ferramentas Gratuitas para Lojistas' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Sobre o GeraCode | Ferramentas Gratuitas para Lojistas',
+    description: 'Conheça o GeraCode: plataforma gratuita e 100% privada de geração de código de barras e QR Code Pix.',
+    images: ['/sobre/opengraph-image'],
   },
 }
 

@@ -2,16 +2,14 @@
 
 import Link from 'next/link'
 import { useCallback } from 'react'
-import { revokeConsent } from '@/lib/consent'
 
 export default function Footer() {
   const handleCookiePreferences = useCallback(() => {
-    revokeConsent()
-    window.location.reload()
+    window.dispatchEvent(new CustomEvent('geracode:open-cookie-settings'))
   }, [])
 
   return (
-    <footer className="bg-gray-50 border-t border-gray-200 mt-16">
+    <footer className="bg-white border-t-2 border-gray-200 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm text-gray-600">
           <div>
@@ -34,7 +32,7 @@ export default function Footer() {
               <li>
                 <button
                   onClick={handleCookiePreferences}
-                  className="hover:text-indigo-600 cursor-pointer text-left"
+                  className="hover:text-indigo-600 cursor-pointer text-left focus-visible:outline-none focus-visible:text-indigo-600 focus-visible:underline"
                 >
                   Preferências de Cookies
                 </button>

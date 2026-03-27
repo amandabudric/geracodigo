@@ -24,13 +24,16 @@ function sendToGA4(metric: Metric) {
 
 export default function WebVitalsReporter() {
   useEffect(() => {
+    const controller = new AbortController()
     import('web-vitals').then(({ onCLS, onINP, onLCP, onFCP, onTTFB }) => {
+      if (controller.signal.aborted) return
       onCLS(sendToGA4)
       onINP(sendToGA4)
       onLCP(sendToGA4)
       onFCP(sendToGA4)
       onTTFB(sendToGA4)
     })
+    return () => { controller.abort() }
   }, [])
 
   return null

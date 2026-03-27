@@ -29,10 +29,84 @@ export function downloadSvgFromElement(
   setTimeout(() => URL.revokeObjectURL(url), 100)
 }
 
+export async function svgToDataUrl(
+  svg: SVGSVGElement,
+  bgColor = '#ffffff',
+  width = 800,
+  height = 300,
+): Promise<string | null> {
+  const svgStr = new XMLSerializer().serializeToString(svg)
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return null
+
+  const loaded = await new Promise<boolean>((resolve) => {
+    const img = new Image()
+    const blob = new Blob([svgStr], { type: 'image/svg+xml' })
+    const url = URL.createObjectURL(blob)
+    img.onload = () => {
+      ctx.fillStyle = bgColor
+      ctx.fillRect(0, 0, width, height)
+      ctx.drawImage(img, 0, 0, width, height)
+      URL.revokeObjectURL(url)
+      resolve(true)
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(false) }
+    img.src = url
+  })
+
+  return loaded ? canvas.toDataURL('image/png') : null
+}
+
+export async function exportSvgsToPdf(
+  svgs: SVGSVGElement[],
+  filename: string,
+  bgColor = '#ffffff',
+): Promise<void> {
+  const { jsPDF } = await import('jspdf')
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+
+  let y = 15
+  const pageW = 210
+  const maxW = 120
+  const margins = 30
+
+  for (const svg of svgs) {
+    const svgW = svg.width.baseVal.value
+      || parseFloat(svg.getAttribute('width') ?? '0')
+      || 300
+    const svgH = svg.height.baseVal.value
+      || parseFloat(svg.getAttribute('height') ?? '0')
+      || 150
+    const aspect = svgH / svgW
+
+    const barcodeW = Math.min(maxW, pageW - margins)
+    const barcodeH = barcodeW * aspect
+
+    if (y + barcodeH + 10 > 280) {
+      doc.addPage()
+      y = 15
+    }
+
+    const renderScale = Math.max(1, Math.ceil(800 / svgW))
+    const dataUrl = await svgToDataUrl(svg, bgColor, svgW * renderScale, svgH * renderScale)
+    if (!dataUrl) continue
+
+    const x = (pageW - barcodeW) / 2
+    doc.addImage(dataUrl, 'PNG', x, y, barcodeW, barcodeH)
+    y += barcodeH + 8
+  }
+
+  doc.save(filename)
+}
+
 export function downloadPngFromElement(
   svgElement: SVGSVGElement,
   filename: string,
   scale = 2,
+  bgColor = '#ffffff',
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     let svgW: number
@@ -68,7 +142,7 @@ export function downloadPngFromElement(
       new Blob([svgStr], { type: 'image/svg+xml' }),
     )
     img.onload = () => {
-      ctx.fillStyle = '#fff'
+      ctx.fillStyle = bgColor
       ctx.fillRect(0, 0, width, height)
       ctx.drawImage(img, 0, 0, width, height)
       URL.revokeObjectURL(url)

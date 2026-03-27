@@ -19,8 +19,8 @@ const tools = [
 export default function NotFound() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-24 text-center">
-      <h1 className="text-6xl font-bold text-indigo-600 mb-4">404</h1>
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">Página não encontrada</h2>
+      <span className="block text-6xl font-bold text-indigo-600 mb-4" aria-hidden="true">404</span>
+      <h1 className="text-2xl font-bold text-gray-900 mb-4">Página não encontrada</h1>
       <p className="text-gray-600 mb-8">
         A página que você procura não existe ou foi movida. Que tal usar uma das nossas ferramentas?
       </p>
@@ -29,7 +29,7 @@ export default function NotFound() {
           <Link
             key={href}
             href={href}
-            className="bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm font-medium text-gray-700 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+            className="bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm font-medium text-gray-700 hover:border-indigo-300 hover:text-indigo-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
           >
             {label}
           </Link>
@@ -37,7 +37,7 @@ export default function NotFound() {
       </div>
       <Link
         href="/"
-        className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+        className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
       >
         Voltar ao início
       </Link>

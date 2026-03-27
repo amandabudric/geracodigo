@@ -16,24 +16,35 @@ const navLinks = [
 export default function Header() {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [trackedPath, setTrackedPath] = useState(pathname)
   const menuRef = useRef<HTMLDivElement>(null)
+  const toggleBtnRef = useRef<HTMLButtonElement>(null)
 
-  if (trackedPath !== pathname) {
-    setTrackedPath(pathname)
-    setMenuOpen(false)
-  }
+  useEffect(() => {
+    queueMicrotask(() => setMenuOpen(false))
+  }, [pathname])
 
   useEffect(() => {
     if (!menuOpen) return
+
+    const scrollY = window.scrollY
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.left = '0'
+    document.body.style.right = '0'
+
+    const firstLink = menuRef.current?.querySelector<HTMLElement>('a[href]')
+    firstLink?.focus()
+
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false)
+        toggleBtnRef.current?.focus()
       }
     }
     function handleEscape(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         setMenuOpen(false)
+        toggleBtnRef.current?.focus()
       }
     }
     function handleFocusTrap(e: KeyboardEvent) {
@@ -56,6 +67,11 @@ export default function Header() {
     document.addEventListener('keydown', handleEscape)
     document.addEventListener('keydown', handleFocusTrap)
     return () => {
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.left = ''
+      document.body.style.right = ''
+      window.scrollTo(0, scrollY)
       document.removeEventListener('mousedown', handleClickOutside)
       document.removeEventListener('keydown', handleEscape)
       document.removeEventListener('keydown', handleFocusTrap)
@@ -104,6 +120,7 @@ export default function Header() {
 
             <div className="md:hidden" ref={menuRef}>
               <button
+                ref={toggleBtnRef}
                 onClick={() => setMenuOpen(!menuOpen)}
                 aria-expanded={menuOpen}
                 aria-controls="mobile-nav"

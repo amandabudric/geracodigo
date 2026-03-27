@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { trackScan, trackCopy } from '@/lib/analytics'
+import ConfirmDialog from '@/components/ConfirmDialog'
 
 interface DecodedResult {
   value: string
@@ -13,10 +14,12 @@ const SCAN_INTERVAL_MS = 150
 
 export default function BarcodeReader() {
   const [isScanning, setIsScanning] = useState(false)
+  const [isCameraLoading, setIsCameraLoading] = useState(false)
   const [results, setResults] = useState<DecodedResult[]>([])
   const [error, setError] = useState('')
   const [copied, setCopied] = useState<string | null>(null)
   const [manualInput, setManualInput] = useState('')
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -51,6 +54,7 @@ export default function BarcodeReader() {
       return
     }
 
+    setIsCameraLoading(true)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -65,9 +69,12 @@ export default function BarcodeReader() {
       })
       setIsScanning(true)
     } catch {
+      stopCamera()
       setError('Não foi possível acessar a câmera. Verifique as permissões do navegador.')
+    } finally {
+      setIsCameraLoading(false)
     }
-  }, [])
+  }, [stopCamera])
 
   useEffect(() => {
     if (!isScanning) return
@@ -99,8 +106,10 @@ export default function BarcodeReader() {
         for (const bc of barcodes) {
           setResults(prev => {
             if (prev.some(r => r.value === bc.rawValue)) return prev
-            trackScan(bc.format)
-            try { navigator.vibrate?.(100) } catch { /* vibration not supported */ }
+            queueMicrotask(() => {
+              trackScan(bc.format)
+              try { navigator.vibrate?.(100) } catch { /* vibration not supported */ }
+            })
             return [{ value: bc.rawValue, format: bc.format, timestamp: Date.now() }, ...prev].slice(0, 50)
           })
         }
@@ -167,19 +176,31 @@ export default function BarcodeReader() {
           <canvas ref={canvasRef} className="hidden" />
           {!isScanning && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-white">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="2" y="4" width="20" height="16" rx="2" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
-              <p className="text-sm text-gray-300 text-center max-w-xs">
-                Aponte a câmera para um código de barras ou QR Code para leitura automática
-              </p>
+              {isCameraLoading ? (
+                <>
+                  <svg className="animate-spin" width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" opacity="0.25" />
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                  <p className="text-sm text-gray-300">Acessando câmera…</p>
+                </>
+              ) : (
+                <>
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <p className="text-sm text-gray-300 text-center max-w-xs">
+                    Aponte a câmera para um código de barras ou QR Code para leitura automática
+                  </p>
+                </>
+              )}
             </div>
           )}
         </div>
 
         {error && (
-          <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 text-sm mb-4">
+          <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-3 text-sm mb-4" role="alert">
             {error}
           </div>
         )}
@@ -188,14 +209,15 @@ export default function BarcodeReader() {
           {!isScanning ? (
             <button
               onClick={startCamera}
-              className="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+              disabled={isCameraLoading}
+              className="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
             >
-              Iniciar Câmera
+              {isCameraLoading ? 'Acessando…' : 'Iniciar Câmera'}
             </button>
           ) : (
             <button
               onClick={stopCamera}
-              className="flex-1 bg-red-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-red-700 transition-colors"
+              className="flex-1 bg-red-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-red-700 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
             >
               Parar Câmera
             </button>
@@ -207,7 +229,7 @@ export default function BarcodeReader() {
           <label htmlFor="manual-barcode" className="block text-sm font-medium text-gray-700 mb-1">
             Ou digite o código manualmente
           </label>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <input
               id="manual-barcode"
               type="text"
@@ -215,11 +237,11 @@ export default function BarcodeReader() {
               onChange={e => setManualInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') handleManualAdd() }}
               placeholder="Digite ou cole o código..."
-              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
             />
             <button
               onClick={handleManualAdd}
-              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+              className="bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors min-h-[44px]"
             >
               Adicionar
             </button>
@@ -240,7 +262,7 @@ export default function BarcodeReader() {
             <h3 className="text-sm font-semibold text-gray-700">
               Códigos detectados ({results.length})
             </h3>
-            <button onClick={() => setResults([])} className="text-xs text-red-500 hover:text-red-700">Limpar</button>
+            <button onClick={() => setShowClearConfirm(true)} className="text-xs text-red-500 hover:text-red-700 min-h-[44px] px-3">Limpar</button>
           </div>
           <div className="space-y-2 max-h-[400px] overflow-y-auto">
             {results.map((r, i) => (
@@ -251,7 +273,7 @@ export default function BarcodeReader() {
                 <span className="text-sm text-gray-800 font-mono flex-1 truncate">{r.value}</span>
                 <button
                   onClick={() => handleCopy(r.value)}
-                  className={`text-xs px-2 py-1 rounded transition-colors shrink-0 ${
+                  className={`text-xs px-3 py-2 rounded transition-colors shrink-0 min-h-[44px] ${
                     copied === r.value ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -262,6 +284,15 @@ export default function BarcodeReader() {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={showClearConfirm}
+        title="Limpar códigos"
+        message="Tem certeza que deseja limpar todos os códigos detectados?"
+        confirmLabel="Limpar"
+        cancelLabel="Cancelar"
+        onConfirm={() => { setResults([]); setShowClearConfirm(false) }}
+        onCancel={() => setShowClearConfirm(false)}
+      />
     </div>
   )
 }

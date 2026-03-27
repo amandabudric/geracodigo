@@ -37,7 +37,13 @@ export function generatePixPayload(params: PixParams): string {
   // ID 26 — Merchant Account Information
   const gui = emvField('00', 'br.gov.bcb.pix')
   const keyField = emvField('01', normalizedKey)
-  const descField = description ? emvField('02', normalize(description).slice(0, 40)) : ''
+  let descField = ''
+  if (description) {
+    const maxDescLen = Math.max(0, Math.min(40, 99 - gui.length - keyField.length - 4))
+    if (maxDescLen > 0) {
+      descField = emvField('02', normalize(description).slice(0, maxDescLen))
+    }
+  }
   const f26 = emvField('26', gui + keyField + descField)
 
   // ID 52

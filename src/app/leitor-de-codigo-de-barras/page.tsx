@@ -7,7 +7,7 @@ import RelatedTools from '@/components/RelatedTools'
 import Breadcrumb from '@/components/Breadcrumb'
 import LastUpdated from '@/components/LastUpdated'
 import GeneratorSkeleton from '@/components/GeneratorSkeleton'
-import { LAST_UPDATED } from '@/lib/constants'
+import { LAST_UPDATED, LAST_UPDATED_ISO } from '@/lib/constants'
 
 const BarcodeReader = dynamic(() => import('./BarcodeReader'), {
   loading: () => <GeneratorSkeleton />,
@@ -53,6 +53,8 @@ const schemas = [
     description: 'Leia códigos de barras e QR Codes usando a câmera do seu dispositivo. Suporta EAN-13, Code 128, QR Code e mais. Gratuito, sem instalar nada.',
     url: 'https://www.geracodigo.com.br/leitor-de-codigo-de-barras',
     inLanguage: 'pt-BR',
+    datePublished: '2026-02-10',
+    dateModified: '2026-03-27',
     isPartOf: { '@id': 'https://www.geracodigo.com.br/#website' },
     about: { '@type': 'Thing', name: 'Leitor de código de barras' },
     publisher: { '@id': 'https://www.geracodigo.com.br/#organization' },
@@ -61,7 +63,7 @@ const schemas = [
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br' },
+      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br/' },
       { '@type': 'ListItem', position: 2, name: 'Leitor de Código de Barras', item: 'https://www.geracodigo.com.br/leitor-de-codigo-de-barras' },
     ],
   },
@@ -92,7 +94,7 @@ export const metadata: Metadata = {
 
 export default function BarcodeReaderPage() {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <SchemaMarkup schema={schemas} />
       <div className="flex justify-center mb-6">
         <AdSlot slot="reader-top" format="horizontal" />
@@ -103,10 +105,17 @@ export default function BarcodeReaderPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Leitor de Código de Barras Online Grátis</h1>
         <p className="text-gray-600">Use a câmera do celular ou computador para ler códigos de barras e QR Codes. Sem instalar nada</p>
         <p className="text-sm text-indigo-600 mt-1">Tudo processado no seu navegador. Nenhum dado é enviado para servidores</p>
-        <LastUpdated date={LAST_UPDATED} />
+        <LastUpdated date={LAST_UPDATED} isoDate={LAST_UPDATED_ISO} />
       </div>
 
-      <BarcodeReader />
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex-1 min-w-0">
+          <BarcodeReader />
+        </div>
+        <aside className="lg:w-[300px] flex justify-center lg:justify-start">
+          <AdSlot slot="reader-sidebar" format="rectangle" />
+        </aside>
+      </div>
 
       {/* Como funciona */}
       <section className="mt-16">
@@ -125,6 +134,10 @@ export default function BarcodeReaderPage() {
           ))}
         </div>
       </section>
+
+      <div className="flex justify-center mt-16">
+        <AdSlot slot="reader-mid" format="responsive" />
+      </div>
 
       {/* Formatos suportados */}
       <section className="mt-16 bg-white rounded-xl border border-gray-200 p-8">

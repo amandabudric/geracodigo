@@ -15,12 +15,23 @@ function gtag(...args: unknown[]) {
   }
 }
 
+function isValidConsent(data: unknown): data is ConsentPreferences {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    typeof (data as ConsentPreferences).analytics === 'boolean' &&
+    typeof (data as ConsentPreferences).advertising === 'boolean' &&
+    typeof (data as ConsentPreferences).timestamp === 'string'
+  )
+}
+
 export function getConsent(): ConsentPreferences | null {
   if (typeof window === 'undefined') return null
   try {
     const raw = localStorage.getItem(CONSENT_KEY)
     if (!raw) return null
-    return JSON.parse(raw) as ConsentPreferences
+    const parsed: unknown = JSON.parse(raw)
+    return isValidConsent(parsed) ? parsed : null
   } catch {
     return null
   }

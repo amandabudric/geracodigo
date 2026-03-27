@@ -8,8 +8,8 @@ export function makeOGImage(title: string, description: string, accent = '#4f46e
     (
       <div
         style={{
-          width: 1200,
-          height: 630,
+          width: ogSize.width,
+          height: ogSize.height,
           display: 'flex',
           flexDirection: 'column',
           backgroundColor: '#f8fafc',
@@ -18,7 +18,7 @@ export function makeOGImage(title: string, description: string, accent = '#4f46e
         }}
       >
         {/* Barra lateral colorida */}
-        <div style={{ position: 'absolute', left: 0, top: 0, width: 12, height: 630, backgroundColor: accent, display: 'flex' }} />
+        <div style={{ position: 'absolute', left: 0, top: 0, width: 12, height: ogSize.height, backgroundColor: accent, display: 'flex' }} />
 
         {/* Conteúdo */}
         <div style={{ display: 'flex', flexDirection: 'column', padding: '64px 80px', flex: 1 }}>

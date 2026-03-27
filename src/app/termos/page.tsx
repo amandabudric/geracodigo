@@ -11,6 +11,8 @@ const schemas = [
     description: 'Termos de Uso do GeraCode. Condições de uso das ferramentas gratuitas de geração de código de barras e QR Code.',
     url: 'https://www.geracodigo.com.br/termos',
     inLanguage: 'pt-BR',
+    datePublished: '2026-01-15',
+    dateModified: '2026-01-15',
     isPartOf: { '@id': 'https://www.geracodigo.com.br/#website' },
     publisher: { '@id': 'https://www.geracodigo.com.br/#organization' },
   },
@@ -18,7 +20,7 @@ const schemas = [
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br' },
+      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br/' },
       { '@type': 'ListItem', position: 2, name: 'Termos de Uso', item: 'https://www.geracodigo.com.br/termos' },
     ],
   },
@@ -38,6 +40,12 @@ export const metadata: Metadata = {
     locale: 'pt_BR',
     siteName: 'GeraCode',
     images: [{ url: '/termos/opengraph-image', width: 1200, height: 630, alt: 'Termos de Uso | GeraCode' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Termos de Uso | GeraCode',
+    description: 'Condições de uso das ferramentas gratuitas de geração de código de barras e QR Code.',
+    images: ['/termos/opengraph-image'],
   },
   robots: {
     index: true,

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { downloadSvgFromElement, downloadPngFromElement, downloadBlob } from '@/lib/download'
+import { downloadSvgFromElement, downloadPngFromElement, downloadBlob, exportSvgsToPdf } from '@/lib/download'
 import { calculateEan13CheckDigit, calculateEan8CheckDigit } from '@/lib/ean-check-digit'
 import { addToHistory, getHistory, removeFromHistory, clearHistory, type BarcodeHistoryItem } from '@/lib/barcode-history'
 import { trackGenerate, trackBatchGenerate, trackDownload, trackPrint } from '@/lib/analytics'
@@ -50,6 +50,7 @@ export default function BarcodeGenerator() {
   const [fontSize, setFontSize] = useState(14)
 
   const [batchResults, setBatchResults] = useState<{ id: string; value: string; error?: string }[]>([])
+  const [batchRendered, setBatchRendered] = useState(false)
 
   const [history, setHistoryState] = useState<BarcodeHistoryItem[]>([])
   const [isExporting, setIsExporting] = useState(false)
@@ -154,6 +155,7 @@ export default function BarcodeGenerator() {
       addToHistory(r.value, format)
     }
     setBatchResults(results)
+    setBatchRendered(false)
     trackBatchGenerate('barcode_generator', format, results.filter(r => !r.error).length)
   }, [batchInput, format, getBarcodeOptions, resolveInput])
 
@@ -167,7 +169,8 @@ export default function BarcodeGenerator() {
         try { renderBarcode(el, val, getBarcodeOptions()) } catch { /* skip */ }
       }
     })
-  }, [batchResults, getBarcodeOptions])
+    setBatchRendered(true)
+  }, [batchResults, getBarcodeOptions, tab])
 
   const downloadBatchZip = useCallback(async () => {
     if (!batchContainerRef.current) return
@@ -177,10 +180,14 @@ export default function BarcodeGenerator() {
       const zip = new JSZip()
       const svgs = batchContainerRef.current.querySelectorAll<SVGSVGElement>('[data-batch-value]')
 
+      const nameCount = new Map<string, number>()
       for (const svg of svgs) {
         const val = svg.getAttribute('data-batch-value') ?? 'barcode'
+        const count = nameCount.get(val) ?? 0
+        nameCount.set(val, count + 1)
+        const filename = count === 0 ? `${val}.svg` : `${val}_${count}.svg`
         const svgStr = new XMLSerializer().serializeToString(svg)
-        zip.file(`${val}.svg`, svgStr)
+        zip.file(filename, svgStr)
       }
       const blob = await zip.generateAsync({ type: 'blob' })
       downloadBlob(blob, 'codigos-de-barras.zip')
@@ -195,53 +202,16 @@ export default function BarcodeGenerator() {
   const downloadPdf = useCallback(async () => {
     setIsExporting(true)
     try {
-      const jsPDF = (await import('jspdf')).jsPDF
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
       const svgs = tab === 'batch'
-        ? batchContainerRef.current?.querySelectorAll<SVGSVGElement>('[data-batch-value]') ?? []
+        ? Array.from(batchContainerRef.current?.querySelectorAll<SVGSVGElement>('[data-batch-value]') ?? [])
         : svgRef.current ? [svgRef.current] : []
 
-      let y = 15
-      const pageW = 210
-      const barcodeW = 80
-      const barcodeH = 30
-
-      for (const svg of svgs) {
-        if (y + barcodeH + 10 > 280) {
-          doc.addPage()
-          y = 15
-        }
-        const svgStr = new XMLSerializer().serializeToString(svg)
-        const canvas = document.createElement('canvas')
-        canvas.width = 800
-        canvas.height = 300
-        const ctx = canvas.getContext('2d')
-        if (!ctx) continue
-
-        const loaded = await new Promise<boolean>((resolve) => {
-          const img = new Image()
-          const blob = new Blob([svgStr], { type: 'image/svg+xml' })
-          const url = URL.createObjectURL(blob)
-          img.onload = () => {
-            ctx.fillStyle = bgColor
-            ctx.fillRect(0, 0, 800, 300)
-            ctx.drawImage(img, 0, 0, 800, 300)
-            URL.revokeObjectURL(url)
-            resolve(true)
-          }
-          img.onerror = () => { URL.revokeObjectURL(url); resolve(false) }
-          img.src = url
-        })
-
-        if (!loaded) continue
-
-        const imgData = canvas.toDataURL('image/png')
-        const x = (pageW - barcodeW) / 2
-        doc.addImage(imgData, 'PNG', x, y, barcodeW, barcodeH)
-        y += barcodeH + 8
+      if (svgs.length === 0) {
+        setError('Gere um código antes de exportar em PDF.')
+        return
       }
 
-      doc.save('codigos-de-barras.pdf')
+      await exportSvgsToPdf(svgs, 'codigos-de-barras.pdf', bgColor)
       trackDownload('barcode_generator', format, 'pdf')
     } catch {
       setError('Erro ao gerar PDF. Tente baixar em outro formato.')
@@ -298,13 +268,15 @@ ${pages.join('\n')}
     }
   }
   const downloadPng = async () => {
-    if (svgRef.current) {
-      try {
-        await downloadPngFromElement(svgRef.current, 'codigo-de-barras.png')
-        trackDownload('barcode_generator', format, 'png')
-      } catch {
-        setError('Erro ao gerar PNG. Tente baixar em SVG.')
-      }
+    if (!svgRef.current) return
+    setIsExporting(true)
+    try {
+      await downloadPngFromElement(svgRef.current, 'codigo-de-barras.png', 2, bgColor)
+      trackDownload('barcode_generator', format, 'png')
+    } catch {
+      setError('Erro ao gerar PNG. Tente baixar em SVG.')
+    } finally {
+      setIsExporting(false)
     }
   }
 
@@ -345,7 +317,7 @@ ${pages.join('\n')}
             aria-selected={tab === t.id}
             aria-controls={`panel-${t.id}`}
             onClick={() => { setTab(t.id); setError('') }}
-            className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+            className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
               tab === t.id ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -364,6 +336,7 @@ ${pages.join('\n')}
                 id="barcode-format"
                 value={format}
                 onChange={e => { setFormat(e.target.value); setGenerated(false); setBatchResults([]); setError('') }}
+                aria-describedby={currentFormat ? 'barcode-format-hint' : undefined}
                 className={inputNormal}
               >
                 {FORMATS.map(f => (
@@ -371,7 +344,7 @@ ${pages.join('\n')}
                 ))}
               </select>
               {currentFormat && (
-                <p className="text-xs text-gray-400 mt-1">{currentFormat.hint}</p>
+                <p id="barcode-format-hint" className="text-xs text-gray-400 mt-1">{currentFormat.hint}</p>
               )}
             </div>
 
@@ -447,24 +420,25 @@ ${pages.join('\n')}
               onChange={e => { setInput(e.target.value); setError('') }}
               onKeyDown={e => { if (e.key === 'Enter') generate() }}
               placeholder={currentFormat?.placeholder ?? 'Digite o valor...'}
+              aria-describedby={checkDigitHint ? 'barcode-check-digit-hint' : undefined}
               className={inputNormal}
             />
             {checkDigitHint && (
-              <p className="text-green-600 text-xs mt-1">{checkDigitHint}</p>
+              <p id="barcode-check-digit-hint" className="text-green-600 text-xs mt-1">{checkDigitHint}</p>
             )}
-            {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+            {error && <p className="text-red-600 text-xs mt-1" role="alert">{error}</p>}
           </div>
 
           <button
             onClick={generate}
             disabled={!barcodeReady}
-            className="w-full bg-indigo-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-indigo-700 active:bg-indigo-800 transition-colors disabled:opacity-50"
+            className="w-full bg-indigo-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-indigo-700 active:bg-indigo-800 transition-colors disabled:opacity-50 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
           >
             {barcodeReady ? 'Gerar Código de Barras' : 'Carregando gerador…'}
           </button>
 
           <div className="border border-gray-100 rounded-lg p-4 bg-gray-50 flex flex-col items-center gap-4 min-h-[160px] justify-center">
-            <svg ref={svgRef} className={generated ? '' : 'hidden'} aria-label={`Código de barras ${format} gerado`} role="img" />
+            <svg ref={svgRef} className={generated ? 'animate-fade-in' : 'hidden'} aria-label={`Código de barras ${format} gerado`} role="img" />
             {!generated && (
               <p className="text-gray-400 text-sm">O código de barras aparecerá aqui</p>
             )}
@@ -477,7 +451,7 @@ ${pages.join('\n')}
                   onClick={downloadPng}
                   disabled={isExporting}
                   aria-label="Baixar PNG"
-                  className="bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                  className="bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                 >
                   PNG
                 </button>
@@ -485,7 +459,7 @@ ${pages.join('\n')}
                   onClick={downloadSvg}
                   disabled={isExporting}
                   aria-label="Baixar SVG"
-                  className="bg-white border border-indigo-600 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors disabled:opacity-50"
+                  className="bg-white border border-indigo-600 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors disabled:opacity-50 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                 >
                   SVG
                 </button>
@@ -493,7 +467,7 @@ ${pages.join('\n')}
                   onClick={downloadPdf}
                   disabled={isExporting}
                   aria-label="Baixar PDF"
-                  className="bg-white border border-indigo-600 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors disabled:opacity-50"
+                  className="bg-white border border-indigo-600 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors disabled:opacity-50 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                 >
                   {isExporting ? 'Gerando…' : 'PDF'}
                 </button>
@@ -501,7 +475,7 @@ ${pages.join('\n')}
                   onClick={() => printLabels(3, 5)}
                   disabled={isExporting}
                   aria-label="Imprimir etiquetas"
-                  className="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
                 >
                   Imprimir
                 </button>
@@ -530,12 +504,12 @@ ${pages.join('\n')}
             </p>
           </div>
 
-          {error && <p className="text-red-500 text-xs">{error}</p>}
+          {error && <p className="text-red-600 text-xs" role="alert">{error}</p>}
 
           <button
             onClick={generateBatch}
             disabled={!barcodeReady}
-            className="w-full bg-indigo-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            className="w-full bg-indigo-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
           >
             {barcodeReady ? 'Gerar Todos' : 'Carregando gerador…'}
           </button>
@@ -555,20 +529,22 @@ ${pages.join('\n')}
                 ))}
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <button onClick={downloadBatchZip} disabled={isExporting} aria-label="Baixar lote em ZIP (SVG)" className="bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50">
-                  {isExporting ? 'Gerando…' : 'ZIP (SVG)'}
-                </button>
-                <button onClick={downloadPdf} disabled={isExporting} aria-label="Baixar lote em PDF" className="bg-white border border-indigo-600 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors disabled:opacity-50">
-                  {isExporting ? 'Gerando…' : 'PDF'}
-                </button>
-                <button onClick={() => printLabels(3, 5)} disabled={isExporting} aria-label="Imprimir etiquetas 3 colunas por 5 linhas" className="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50">
-                  Etiquetas 3x5
-                </button>
-                <button onClick={() => printLabels(2, 5)} disabled={isExporting} aria-label="Imprimir etiquetas 2 colunas por 5 linhas" className="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50">
-                  Etiquetas 2x5
-                </button>
-              </div>
+              {batchRendered && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button onClick={downloadBatchZip} disabled={isExporting} aria-label="Baixar lote em ZIP (SVG)" className="bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+                    {isExporting ? 'Gerando…' : 'ZIP (SVG)'}
+                  </button>
+                  <button onClick={downloadPdf} disabled={isExporting} aria-label="Baixar lote em PDF" className="bg-white border border-indigo-600 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors disabled:opacity-50 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+                    {isExporting ? 'Gerando…' : 'PDF'}
+                  </button>
+                  <button onClick={() => printLabels(3, 5)} disabled={isExporting} aria-label="Imprimir etiquetas 3 colunas por 5 linhas" className="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2">
+                    Etiquetas 3x5
+                  </button>
+                  <button onClick={() => printLabels(2, 5)} disabled={isExporting} aria-label="Imprimir etiquetas 2 colunas por 5 linhas" className="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2">
+                    Etiquetas 2x5
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -582,7 +558,7 @@ ${pages.join('\n')}
           ) : (
             <>
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-sm font-semibold text-gray-700">Últimos códigos gerados</h3>
+                <h2 className="text-sm font-semibold text-gray-700">Últimos códigos gerados</h2>
                 <button onClick={handleClearHistory} className="text-xs text-red-500 hover:text-red-700 transition-colors">
                   Limpar tudo
                 </button>
@@ -614,6 +590,10 @@ ${pages.join('\n')}
           )}
         </div>
       )}
+
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {generated ? `Código de barras ${format} gerado com sucesso` : ''}
+      </div>
 
       <ConfirmDialog
         open={showClearConfirm}

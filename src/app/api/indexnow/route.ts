@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-const INDEXNOW_KEY = process.env.INDEXNOW_KEY ?? 'dc2556c8e22e4d389f91329f8d9b9ceb'
+const INDEXNOW_KEY = process.env.INDEXNOW_KEY
 const HOST = 'https://www.geracodigo.com.br'
 const SITEMAP_URL = `${HOST}/sitemap.xml`
 
@@ -23,6 +23,10 @@ export async function POST(request: Request) {
 
   if (!expectedToken || authHeader !== `Bearer ${expectedToken}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!INDEXNOW_KEY) {
+    return NextResponse.json({ error: 'INDEXNOW_KEY not configured' }, { status: 500 })
   }
 
   const body = await request.json().catch(() => null)

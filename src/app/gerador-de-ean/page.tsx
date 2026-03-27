@@ -7,7 +7,7 @@ import RelatedTools from '@/components/RelatedTools'
 import Breadcrumb from '@/components/Breadcrumb'
 import LastUpdated from '@/components/LastUpdated'
 import GeneratorSkeleton from '@/components/GeneratorSkeleton'
-import { LAST_UPDATED } from '@/lib/constants'
+import { LAST_UPDATED, LAST_UPDATED_ISO } from '@/lib/constants'
 
 const EanGenerator = dynamic(() => import('./EanGenerator'), {
   loading: () => <GeneratorSkeleton />,
@@ -49,6 +49,8 @@ const schemas = [
     description: 'Crie códigos EAN-13 e EAN-8 grátis para produtos, e-commerce e varejo. Download instantâneo em PNG, SVG e PDF. Sem cadastro, 100% privado.',
     url: 'https://www.geracodigo.com.br/gerador-de-ean',
     inLanguage: 'pt-BR',
+    datePublished: '2026-01-15',
+    dateModified: '2026-03-01',
     isPartOf: { '@id': 'https://www.geracodigo.com.br/#website' },
     about: { '@type': 'Thing', name: 'EAN (European Article Number / GTIN)' },
     publisher: { '@id': 'https://www.geracodigo.com.br/#organization' },
@@ -57,7 +59,7 @@ const schemas = [
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br' },
+      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br/' },
       { '@type': 'ListItem', position: 2, name: 'Gerador de EAN-13 e EAN-8', item: 'https://www.geracodigo.com.br/gerador-de-ean' },
     ],
   },
@@ -88,7 +90,7 @@ export const metadata: Metadata = {
 
 export default function EanPage() {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <SchemaMarkup schema={schemas} />
       <div className="flex justify-center mb-6">
         <AdSlot slot="ean-top" format="horizontal" />
@@ -98,9 +100,16 @@ export default function EanPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerador de EAN-13 e EAN-8 Grátis Online</h1>
         <p className="text-gray-600">Crie códigos EAN para produtos, e-commerce e varejo. Geração instantânea no navegador.</p>
         <p className="text-sm text-indigo-600 mt-1"><span aria-hidden="true">{'\u{1F512}'}</span> Gerado direto no seu navegador. Seus dados nunca saem do seu computador</p>
-        <LastUpdated date={LAST_UPDATED} />
+        <LastUpdated date={LAST_UPDATED} isoDate={LAST_UPDATED_ISO} />
       </div>
-      <EanGenerator />
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex-1 min-w-0">
+          <EanGenerator />
+        </div>
+        <aside className="lg:w-[300px] flex justify-center lg:justify-start">
+          <AdSlot slot="ean-sidebar" format="rectangle" />
+        </aside>
+      </div>
 
       {/* Como usar */}
       <section className="mt-16">
@@ -163,6 +172,10 @@ export default function EanPage() {
           ))}
         </div>
       </section>
+
+      <div className="flex justify-center mt-16">
+        <AdSlot slot="ean-mid" format="responsive" />
+      </div>
 
       {/* Dígito verificador */}
       <section className="mt-16 bg-white rounded-xl border border-gray-200 p-8">

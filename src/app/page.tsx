@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import SchemaMarkup from '@/components/SchemaMarkup'
 import FAQSection from '@/components/FAQSection'
+import AdSlot from '@/components/AdSlot'
 
 const schemas = [
   {
@@ -23,6 +24,14 @@ const schemas = [
     logo: 'https://www.geracodigo.com.br/logo.svg',
     description: 'Ferramentas gratuitas de geração de código de barras, QR Code Pix e SKU para lojistas brasileiros',
     foundingDate: '2026-01-01',
+    sameAs: [],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br/' },
+    ],
   },
   {
     '@context': 'https://schema.org',
@@ -31,12 +40,12 @@ const schemas = [
     description: 'Todas as ferramentas gratuitas de geração de código disponíveis no GeraCode',
     numberOfItems: 6,
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Gerador de QR Code Pix', url: 'https://www.geracodigo.com.br/gerador-de-qr-code-pix' },
-      { '@type': 'ListItem', position: 2, name: 'Gerador de Código de Barras', url: 'https://www.geracodigo.com.br/gerador-de-codigo-de-barras' },
-      { '@type': 'ListItem', position: 3, name: 'Gerador de EAN-13 e EAN-8', url: 'https://www.geracodigo.com.br/gerador-de-ean' },
-      { '@type': 'ListItem', position: 4, name: 'Gerador de QR Code', url: 'https://www.geracodigo.com.br/gerador-de-qr-code' },
-      { '@type': 'ListItem', position: 5, name: 'Leitor de Código de Barras', url: 'https://www.geracodigo.com.br/leitor-de-codigo-de-barras' },
-      { '@type': 'ListItem', position: 6, name: 'Gerador de SKU', url: 'https://www.geracodigo.com.br/gerador-de-sku' },
+      { '@type': 'ListItem', position: 1, name: 'Gerador de QR Code Pix', item: 'https://www.geracodigo.com.br/gerador-de-qr-code-pix' },
+      { '@type': 'ListItem', position: 2, name: 'Gerador de Código de Barras', item: 'https://www.geracodigo.com.br/gerador-de-codigo-de-barras' },
+      { '@type': 'ListItem', position: 3, name: 'Gerador de EAN-13 e EAN-8', item: 'https://www.geracodigo.com.br/gerador-de-ean' },
+      { '@type': 'ListItem', position: 4, name: 'Gerador de QR Code', item: 'https://www.geracodigo.com.br/gerador-de-qr-code' },
+      { '@type': 'ListItem', position: 5, name: 'Leitor de Código de Barras', item: 'https://www.geracodigo.com.br/leitor-de-codigo-de-barras' },
+      { '@type': 'ListItem', position: 6, name: 'Gerador de SKU', item: 'https://www.geracodigo.com.br/gerador-de-sku' },
     ],
   },
 ]
@@ -50,7 +59,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'GeraCode | Gerador de Código de Barras, QR Code Pix e SKU Grátis',
     description: 'Ferramentas gratuitas para lojistas brasileiros. 12+ formatos de código de barras, QR Code Pix, leitor via câmera e SKU. Sem cadastro.',
-    url: 'https://www.geracodigo.com.br',
+    url: 'https://www.geracodigo.com.br/',
     type: 'website',
     locale: 'pt_BR',
     siteName: 'GeraCode',
@@ -79,7 +88,7 @@ const tools = [
     description: 'Crie códigos em 12 formatos: EAN-13, Code 128, Code 93, UPC-A, ITF-14, Codabar e mais. Geração em lote, PDF, impressão de etiquetas e histórico.',
     badge: '12+ formatos',
     badgeColor: 'bg-indigo-100 text-indigo-800',
-    icon: '|||',
+    icon: '\u{1F4CA}',
   },
   {
     href: '/gerador-de-ean',
@@ -132,16 +141,25 @@ export default function HomePage() {
         <p className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-sm font-medium mt-4">
           <span aria-hidden="true">{'\u{1F512}'}</span> 100% privado. Seus dados nunca saem do seu navegador
         </p>
+        <div className="mt-6">
+          <a
+            href="#ferramentas"
+            className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+          >
+            Comece a gerar agora
+          </a>
+        </div>
       </section>
 
       {/* Ferramentas */}
-      <section aria-label="Ferramentas disponíveis">
+      <section aria-labelledby="tools-heading" id="ferramentas">
+        <h2 id="tools-heading" className="text-2xl font-bold text-gray-900 mb-6">Ferramentas Disponíveis</h2>
         <ul role="list" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {tools.map((tool) => (
             <li key={tool.href}>
               <Link
                 href={tool.href}
-                className="group bg-white rounded-xl border border-gray-200 p-6 hover:border-indigo-300 hover:shadow-md transition-all flex flex-col h-full"
+                className="group bg-white rounded-xl border border-gray-200 p-6 hover:border-indigo-300 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex flex-col h-full"
               >
                 <div className="flex items-start justify-between mb-3">
                   <span className="text-3xl" aria-hidden="true">{tool.icon}</span>
@@ -151,15 +169,19 @@ export default function HomePage() {
                     </span>
                   )}
                 </div>
-                <h2 className="text-xl font-semibold text-gray-900 group-hover:text-indigo-600 mb-2">
+                <h3 className="text-xl font-semibold text-gray-900 group-hover:text-indigo-600 mb-2">
                   {tool.title}
-                </h2>
+                </h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{tool.description}</p>
               </Link>
             </li>
           ))}
         </ul>
       </section>
+
+      <div className="flex justify-center mb-16">
+        <AdSlot slot="home-mid" format="responsive" />
+      </div>
 
       {/* Por que usar o GeraCode */}
       <section aria-labelledby="why-geracode" className="bg-white rounded-xl border border-gray-200 p-8 mb-16">
@@ -240,6 +262,10 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      <div className="flex justify-center mb-16">
+        <AdSlot slot="home-bottom" format="responsive" />
+      </div>
 
       {/* FAQ */}
       <FAQSection items={[

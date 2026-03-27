@@ -6,6 +6,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import WebVitalsReporter from '@/components/WebVitalsReporter'
 import CookieConsent from '@/components/CookieConsent'
+import ToastContainer from '@/components/Toast'
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID
 const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT
@@ -47,6 +48,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
+    apple: [{ url: '/apple-icon', type: 'image/png', sizes: '180x180' }],
   },
   manifest: '/site.webmanifest',
 }
@@ -74,6 +76,20 @@ export default function RootLayout({
             <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
             <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
             <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+          </>
+        )}
+      </head>
+      <body className={inter.className}>
+        <Header />
+        <main id="main-content" className="min-h-screen bg-gray-50">
+          {children}
+        </main>
+        <Footer />
+        <WebVitalsReporter />
+        <CookieConsent />
+        <ToastContainer />
+        {GA_ID && (
+          <>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
               strategy="lazyOnload"
@@ -92,15 +108,6 @@ export default function RootLayout({
             crossOrigin="anonymous"
           />
         )}
-      </head>
-      <body className={inter.className}>
-        <Header />
-        <main id="main-content" className="min-h-screen bg-gray-50">
-          {children}
-        </main>
-        <Footer />
-        <WebVitalsReporter />
-        <CookieConsent />
         <Script src="/scripts/sw-register.js" strategy="lazyOnload" />
       </body>
     </html>

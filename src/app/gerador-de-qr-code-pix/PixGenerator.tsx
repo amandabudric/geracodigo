@@ -24,6 +24,14 @@ const KEY_PLACEHOLDERS: Record<KeyType, string> = {
   ALEATORIA: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
 }
 
+const KEY_MAX_LENGTHS: Record<KeyType, number> = {
+  CPF: 14,
+  CNPJ: 18,
+  EMAIL: 77,
+  TELEFONE: 15,
+  ALEATORIA: 36,
+}
+
 interface FieldErrors {
   key?: string
   name?: string
@@ -49,11 +57,18 @@ export default function PixGenerator() {
   const [isValid, setIsValid] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  const [valueCapped, setValueCapped] = useState(false)
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => () => {
     if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current)
   }, [])
+
+  const markStale = () => {
+    if (isValid) {
+      setIsValid(false)
+    }
+  }
 
   const clearFieldError = (field: keyof FieldErrors) => {
     setFieldErrors(prev => {
@@ -79,6 +94,8 @@ export default function PixGenerator() {
         errors.key = 'Informe um e-mail válido'
       } else if (keyType === 'TELEFONE' && !/^\+\d{10,14}$/.test(trimmedKey)) {
         errors.key = 'Telefone deve iniciar com + e código do país (ex: +5511999998888)'
+      } else if (keyType === 'ALEATORIA' && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmedKey)) {
+        errors.key = 'Chave aleatória deve estar no formato UUID (ex: 123e4567-e89b-12d3-a456-426614174000)'
       }
     }
     if (!name.trim()) errors.name = 'Informe o nome do recebedor'
@@ -96,8 +113,10 @@ export default function PixGenerator() {
     setError('')
     try {
       const parsedValue = value ? parseFloat(value) : undefined
-      const numValue = parsedValue !== undefined && !isNaN(parsedValue)
-        ? Math.max(0, Math.min(999999.99, parsedValue))
+      const isCapped = parsedValue !== undefined && !isNaN(parsedValue) && parsedValue > 999999.99
+      setValueCapped(isCapped)
+      const numValue = parsedValue !== undefined && !isNaN(parsedValue) && parsedValue > 0
+        ? Math.min(999999.99, parsedValue)
         : undefined
       const pix = generatePixPayload({
         keyType,
@@ -138,6 +157,8 @@ export default function PixGenerator() {
         setCopied(true)
       } catch {
         setError('Não foi possível copiar. Selecione o texto do payload manualmente.')
+        if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current)
+        copyTimeoutRef.current = setTimeout(() => setError(''), 4000)
         return
       }
     }
@@ -183,6 +204,7 @@ export default function PixGenerator() {
                 setKeyType(e.target.value as KeyType)
                 setKey('')
                 clearFieldError('key')
+                markStale()
               }}
               className={inputNormal}
             >
@@ -201,15 +223,16 @@ export default function PixGenerator() {
               id="pix-key"
               type="text"
               value={key}
-              onChange={e => { setKey(e.target.value); clearFieldError('key') }}
+              onChange={e => { setKey(e.target.value); clearFieldError('key'); markStale() }}
               placeholder={KEY_PLACEHOLDERS[keyType]}
+              maxLength={KEY_MAX_LENGTHS[keyType]}
               className={fieldErrors.key ? inputErr : inputNormal}
               aria-required="true"
               aria-invalid={!!fieldErrors.key}
               aria-describedby={fieldErrors.key ? 'pix-key-error' : undefined}
             />
             {fieldErrors.key && (
-              <p id="pix-key-error" className="text-red-500 text-xs mt-1 flex items-center gap-1">
+              <p id="pix-key-error" className="text-red-600 text-xs mt-1 flex items-center gap-1" role="alert">
                 <span aria-hidden="true">⚠</span> {fieldErrors.key}
               </p>
             )}
@@ -225,7 +248,7 @@ export default function PixGenerator() {
               id="pix-name"
               type="text"
               value={name}
-              onChange={e => { setName(e.target.value); clearFieldError('name') }}
+              onChange={e => { setName(e.target.value); clearFieldError('name'); markStale() }}
               placeholder="Seu Nome ou Empresa"
               maxLength={25}
               className={fieldErrors.name ? inputErr : inputNormal}
@@ -234,7 +257,7 @@ export default function PixGenerator() {
               aria-describedby={fieldErrors.name ? 'pix-name-error' : undefined}
             />
             {fieldErrors.name && (
-              <p id="pix-name-error" className="text-red-500 text-xs mt-1 flex items-center gap-1">
+              <p id="pix-name-error" className="text-red-600 text-xs mt-1 flex items-center gap-1" role="alert">
                 <span aria-hidden="true">⚠</span> {fieldErrors.name}
               </p>
             )}
@@ -250,7 +273,7 @@ export default function PixGenerator() {
               id="pix-city"
               type="text"
               value={city}
-              onChange={e => { setCity(e.target.value); clearFieldError('city') }}
+              onChange={e => { setCity(e.target.value); clearFieldError('city'); markStale() }}
               placeholder="São Paulo"
               maxLength={15}
               className={fieldErrors.city ? inputErr : inputNormal}
@@ -259,7 +282,7 @@ export default function PixGenerator() {
               aria-describedby={fieldErrors.city ? 'pix-city-error' : undefined}
             />
             {fieldErrors.city && (
-              <p id="pix-city-error" className="text-red-500 text-xs mt-1 flex items-center gap-1">
+              <p id="pix-city-error" className="text-red-600 text-xs mt-1 flex items-center gap-1" role="alert">
                 <span aria-hidden="true">⚠</span> {fieldErrors.city}
               </p>
             )}
@@ -275,13 +298,16 @@ export default function PixGenerator() {
               id="pix-value"
               type="number"
               value={value}
-              onChange={e => setValue(e.target.value)}
+              onChange={e => { setValue(e.target.value); setValueCapped(false); markStale() }}
               onKeyDown={e => { if (e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '-') e.preventDefault() }}
               placeholder="0.00"
               min="0"
               step="0.01"
               className={inputNormal}
             />
+            {valueCapped && (
+              <p className="text-amber-600 text-xs mt-1">Valor máximo permitido: R$ 999.999,99. O valor foi ajustado automaticamente.</p>
+            )}
           </div>
 
           {/* TXID */}
@@ -294,7 +320,7 @@ export default function PixGenerator() {
               id="pix-txid"
               type="text"
               value={txid}
-              onChange={e => setTxid(e.target.value)}
+              onChange={e => { setTxid(e.target.value); markStale() }}
               placeholder="PEDIDO001"
               maxLength={25}
               className={inputNormal}
@@ -311,7 +337,7 @@ export default function PixGenerator() {
               id="pix-description"
               type="text"
               value={description}
-              onChange={e => setDescription(e.target.value)}
+              onChange={e => { setDescription(e.target.value); markStale() }}
               placeholder="Pagamento do pedido"
               maxLength={40}
               className={inputNormal}
@@ -322,7 +348,7 @@ export default function PixGenerator() {
           <button
             onClick={handleGenerate}
             disabled={isGenerating}
-            className="w-full bg-indigo-600 text-white px-4 py-3 rounded-lg font-semibold text-sm hover:bg-indigo-700 active:bg-indigo-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+            className="w-full bg-indigo-600 text-white px-4 py-3 rounded-lg font-semibold text-sm hover:bg-indigo-700 active:bg-indigo-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
           >
             {isGenerating ? 'Gerando…' : 'Gerar QR Code Pix'}
           </button>
@@ -333,6 +359,9 @@ export default function PixGenerator() {
       <div className="flex-1 flex flex-col gap-4">
         <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col items-center gap-4">
           <h2 className="text-lg font-semibold text-gray-900 self-start">Preview do QR Code</h2>
+          <div className="sr-only" aria-live="polite" aria-atomic="true">
+            {isValid ? 'QR Code Pix gerado com sucesso' : ''}
+          </div>
           {qrDataUrl ? (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element -- data URL gerada dinamicamente, next/image nao aplica */}
@@ -341,26 +370,26 @@ export default function PixGenerator() {
                 alt="QR Code Pix gerado com payload BR Code válido"
                 width={192}
                 height={192}
-                className="w-48 h-48 rounded-lg"
+                className="w-48 h-48 rounded-lg animate-fade-in"
               />
               {isValid && (
                 <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 border border-green-200 px-3 py-1 rounded-full text-xs font-semibold">
                   ✓ QR válido, testado com o padrão Banco Central
                 </span>
               )}
-              {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+              {error && <p className="text-red-600 text-xs text-center" role="alert">{error}</p>}
               <div className="flex gap-2 w-full">
                 <button
                   onClick={handleDownloadPng}
                   aria-label="Baixar QR Code Pix em formato PNG"
-                  className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                  className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                 >
                   Download PNG
                 </button>
                 <button
                   onClick={handleDownloadSvg}
                   aria-label="Baixar QR Code Pix em formato SVG"
-                  className="flex-1 bg-white border border-indigo-600 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors"
+                  className="flex-1 bg-white border border-indigo-600 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                 >
                   Download SVG
                 </button>

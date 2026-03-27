@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 
 interface AdSlotProps {
   slot: string
@@ -17,7 +17,7 @@ const layoutMap: Record<AdSlotProps['format'], { style: React.CSSProperties }> =
     style: { display: 'block', width: '300px', height: '250px' },
   },
   responsive: {
-    style: { display: 'block', width: '100%' },
+    style: { display: 'block', width: '100%', minHeight: '90px' },
   },
 }
 
@@ -31,19 +31,36 @@ export default function AdSlot({ slot, format }: AdSlotProps) {
   const adRef = useRef<HTMLModElement>(null)
   const pushed = useRef(false)
 
-  useEffect(() => {
-    if (!ADSENSE_CLIENT || pushed.current || !adRef.current) return
-
+  const tryPush = useCallback(() => {
+    if (pushed.current || !adRef.current) return true
     try {
-      const adsbygoogle = (window as unknown as { adsbygoogle: unknown[] }).adsbygoogle
+      const adsbygoogle = (window as unknown as { adsbygoogle?: unknown[] }).adsbygoogle
       if (adsbygoogle) {
         adsbygoogle.push({})
         pushed.current = true
+        return true
       }
     } catch {
       /* AdSense not loaded yet */
     }
+    return false
   }, [])
+
+  useEffect(() => {
+    if (!ADSENSE_CLIENT) return
+    if (tryPush()) return
+
+    let attempts = 0
+    const maxAttempts = 10
+    const interval = setInterval(() => {
+      attempts++
+      if (tryPush() || attempts >= maxAttempts) {
+        clearInterval(interval)
+      }
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [tryPush])
 
   if (!ADSENSE_CLIENT) {
     const dim = placeholderDimensions[format]

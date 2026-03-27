@@ -29,6 +29,7 @@ export default function SkuGeneratorClient() {
   const [results, setResults] = useState<string[]>([])
   const [copied, setCopied] = useState(false)
   const [copyError, setCopyError] = useState(false)
+  const [validationError, setValidationError] = useState('')
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => () => {
@@ -47,7 +48,14 @@ export default function SkuGeneratorClient() {
 
   const preview = useMemo(() => generateSku(config), [config])
 
+  const hasTextParts = !!(prefix.trim() || category.trim() || filteredAttributes.length > 0)
+
   const handleGenerate = useCallback(() => {
+    if (!hasTextParts && sequential <= 0) {
+      setValidationError('Preencha pelo menos um campo (prefixo, categoria ou atributo) para gerar o SKU.')
+      return
+    }
+    setValidationError('')
     const skus = batchCount > 1
       ? generateSkuBatch(config, batchCount)
       : [generateSku(config)]
@@ -57,7 +65,7 @@ export default function SkuGeneratorClient() {
     } else {
       trackGenerate('sku_generator', 'sku')
     }
-  }, [config, batchCount])
+  }, [config, batchCount, hasTextParts, sequential])
 
   const addAttribute = () => setAttributes(prev => [...prev, { id: genAttrId(), value: '' }])
 
@@ -194,9 +202,15 @@ export default function SkuGeneratorClient() {
           <p className="text-lg font-mono font-bold text-indigo-700">{preview || '—'}</p>
         </div>
 
+        {validationError && (
+          <p className="text-red-600 text-xs flex items-center gap-1" role="alert">
+            <span aria-hidden="true">⚠</span> {validationError}
+          </p>
+        )}
+
         <button
           onClick={handleGenerate}
-          className="w-full bg-indigo-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-indigo-700 active:bg-indigo-800 transition-colors"
+          className="w-full bg-indigo-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-indigo-700 active:bg-indigo-800 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
         >
           Gerar {batchCount > 1 ? `${batchCount} SKUs` : 'SKU'}
         </button>
@@ -204,6 +218,9 @@ export default function SkuGeneratorClient() {
 
       {/* Results */}
       <div className="flex-1">
+        <div className="sr-only" aria-live="polite" aria-atomic="true">
+          {results.length > 0 ? `${results.length} SKU${results.length > 1 ? 's' : ''} gerado${results.length > 1 ? 's' : ''} com sucesso` : ''}
+        </div>
         {results.length > 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex justify-between items-center mb-4">
@@ -211,7 +228,7 @@ export default function SkuGeneratorClient() {
               <div className="flex gap-2">
                 <button
                   onClick={handleCopyAll}
-                  className={`text-xs px-3 py-1 rounded-full font-medium transition-colors ${
+                  className={`text-xs px-3 py-2 rounded-full font-medium transition-colors min-h-[44px] ${
                     copyError
                       ? 'bg-red-100 text-red-700'
                       : copied
@@ -223,15 +240,15 @@ export default function SkuGeneratorClient() {
                 </button>
                 <button
                   onClick={handleDownloadCsv}
-                  className="text-xs px-3 py-1 rounded-full font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                  className="text-xs px-3 py-2 rounded-full font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors min-h-[44px]"
                 >
                   CSV
                 </button>
               </div>
             </div>
             <div className="space-y-1 max-h-[500px] overflow-y-auto font-mono text-sm">
-              {results.map((sku) => (
-                <div key={sku} className="bg-gray-50 rounded px-3 py-1.5 text-gray-800">
+              {results.map((sku, idx) => (
+                <div key={`${sku}-${idx}`} className="bg-gray-50 rounded px-3 py-1.5 text-gray-800">
                   {sku}
                 </div>
               ))}

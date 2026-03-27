@@ -8,7 +8,7 @@ import RelatedTools from '@/components/RelatedTools'
 import Breadcrumb from '@/components/Breadcrumb'
 import LastUpdated from '@/components/LastUpdated'
 import GeneratorSkeleton from '@/components/GeneratorSkeleton'
-import { LAST_UPDATED } from '@/lib/constants'
+import { LAST_UPDATED, LAST_UPDATED_ISO } from '@/lib/constants'
 
 const QrGenerator = dynamic(() => import('./QrGenerator'), {
   loading: () => <GeneratorSkeleton />,
@@ -50,6 +50,8 @@ const schemas = [
     description: 'Gere QR Code para links, textos e qualquer conteúdo. Color picker, seletor de tamanho, download PNG e SVG. Gratuito, sem cadastro.',
     url: 'https://www.geracodigo.com.br/gerador-de-qr-code',
     inLanguage: 'pt-BR',
+    datePublished: '2026-01-15',
+    dateModified: '2026-03-01',
     isPartOf: { '@id': 'https://www.geracodigo.com.br/#website' },
     about: { '@type': 'Thing', name: 'QR Code' },
     publisher: { '@id': 'https://www.geracodigo.com.br/#organization' },
@@ -58,7 +60,7 @@ const schemas = [
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br' },
+      { '@type': 'ListItem', position: 1, name: 'GeraCode', item: 'https://www.geracodigo.com.br/' },
       { '@type': 'ListItem', position: 2, name: 'Gerador de QR Code', item: 'https://www.geracodigo.com.br/gerador-de-qr-code' },
     ],
   },
@@ -89,7 +91,7 @@ export const metadata: Metadata = {
 
 export default function QrPage() {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <SchemaMarkup schema={schemas} />
       <div className="flex justify-center mb-6">
         <AdSlot slot="qr-top" format="horizontal" />
@@ -99,9 +101,16 @@ export default function QrPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerador de QR Code Grátis Online</h1>
         <p className="text-gray-600">Gere QR Code para links, textos e qualquer conteúdo. Gratuito, sem cadastro.</p>
         <p className="text-sm text-indigo-600 mt-1"><span aria-hidden="true">{'\u{1F512}'}</span> Gerado direto no seu navegador. Seus dados nunca saem do seu computador</p>
-        <LastUpdated date={LAST_UPDATED} />
+        <LastUpdated date={LAST_UPDATED} isoDate={LAST_UPDATED_ISO} />
       </div>
-      <QrGenerator />
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex-1 min-w-0">
+          <QrGenerator />
+        </div>
+        <aside className="lg:w-[300px] flex justify-center lg:justify-start">
+          <AdSlot slot="qr-sidebar" format="rectangle" />
+        </aside>
+      </div>
 
       {/* Como usar */}
       <section className="mt-16">
@@ -140,6 +149,10 @@ export default function QrPage() {
           ))}
         </div>
       </section>
+
+      <div className="flex justify-center mt-16">
+        <AdSlot slot="qr-mid" format="responsive" />
+      </div>
 
       {/* Tipos de conteúdo */}
       <section className="mt-16">

@@ -32,15 +32,17 @@ export default function FAQSection({ items }: FAQSectionProps) {
         {items.map((item) => (
           <details
             key={item.question}
-            className="bg-white border border-gray-200 rounded-xl p-6 group"
+            className="bg-white border border-gray-200 rounded-xl group transition-shadow hover:shadow-sm"
           >
             <summary
-              className="font-semibold text-gray-900 cursor-pointer list-none flex justify-between items-center gap-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 rounded-lg"
+              className="font-semibold text-gray-900 cursor-pointer list-none flex justify-between items-center gap-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 rounded-xl p-6"
             >
               {item.question}
-              <span className="text-indigo-500 text-xl shrink-0 group-open:rotate-45 transition-transform" aria-hidden="true">+</span>
+              <span className="text-indigo-500 text-xl shrink-0 group-open:rotate-45 transition-transform duration-200" aria-hidden="true">+</span>
             </summary>
-            <p className="mt-4 text-gray-600 leading-relaxed">{item.answer}</p>
+            <div className="px-6 pb-6">
+              <p className="text-gray-600 leading-relaxed">{item.answer}</p>
+            </div>
           </details>
         ))}
       </div>

@@ -4,10 +4,32 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import QRCode from 'qrcode'
 import { trackGenerate, trackDownload } from '@/lib/analytics'
 import { downloadDataUrl, downloadBlob } from '@/lib/download'
+import ExportActions from '@/components/ExportActions'
 
 type ExportState = 'idle' | 'pdf'
 
 const SIZES = [200, 300, 400, 500]
+
+const MIN_CONTRAST_RATIO = 3
+
+function hexToLinear(hex: string): [number, number, number] {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+  if (!m) return [0, 0, 0]
+  return [m[1], m[2], m[3]].map(h => {
+    const c = parseInt(h, 16) / 255
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+  }) as [number, number, number]
+}
+
+function contrastRatio(a: string, b: string): number {
+  const [r1, g1, b1] = hexToLinear(a)
+  const [r2, g2, b2] = hexToLinear(b)
+  const l1 = 0.2126 * r1 + 0.7152 * g1 + 0.0722 * b1
+  const l2 = 0.2126 * r2 + 0.7152 * g2 + 0.0722 * b2
+  const lighter = Math.max(l1, l2)
+  const darker = Math.min(l1, l2)
+  return (lighter + 0.05) / (darker + 0.05)
+}
 
 export default function QrGenerator() {
   const [input, setInput] = useState('')
@@ -20,19 +42,25 @@ export default function QrGenerator() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const hasTrackedRef = useRef(false)
 
+  const lowContrast = contrastRatio(darkColor, lightColor) < MIN_CONTRAST_RATIO
+
+  const prevInputRef = useRef('')
+
   const generate = useCallback(async () => {
-    if (!input.trim()) { setQrDataUrl(''); setError(''); hasTrackedRef.current = false; return }
+    if (!input.trim()) { setQrDataUrl(''); setError(''); hasTrackedRef.current = false; prevInputRef.current = ''; return }
     try {
-      const url = await QRCode.toDataURL(input.trim(), {
+      const trimmed = input.trim()
+      const url = await QRCode.toDataURL(trimmed, {
         width: size,
         margin: 2,
         color: { dark: darkColor, light: lightColor },
       })
       setQrDataUrl(url)
       setError('')
-      if (!hasTrackedRef.current) {
+      if (!hasTrackedRef.current || trimmed !== prevInputRef.current) {
         trackGenerate('qr_code_generator', 'qr_code')
         hasTrackedRef.current = true
+        prevInputRef.current = trimmed
       }
     } catch {
       setError('Erro ao gerar QR Code.')
@@ -44,6 +72,11 @@ export default function QrGenerator() {
     debounceRef.current = setTimeout(generate, 300)
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
   }, [generate])
+
+  const handleGenerateClick = () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    generate()
+  }
 
   const downloadPng = () => {
     if (!qrDataUrl) return
@@ -92,6 +125,7 @@ export default function QrGenerator() {
             onChange={e => setInput(e.target.value)}
             placeholder="https://seusite.com.br ou qualquer texto..."
             aria-required="true"
+            maxLength={4296}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 h-24 resize-none"
           />
         </div>
@@ -122,19 +156,39 @@ export default function QrGenerator() {
             </div>
           </div>
         </div>
-        {error && <p className="text-red-500 text-xs" role="alert">{error}</p>}
+        {lowContrast && (
+          <p className="text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs" role="status">
+            ⚠ Contraste baixo entre as cores escolhidas. Alguns leitores podem não conseguir escanear o QR Code.
+          </p>
+        )}
+        {error && <p className="text-red-600 text-xs" role="alert">{error}</p>}
+
+        <button
+          onClick={handleGenerateClick}
+          className="w-full bg-indigo-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-indigo-700 active:bg-indigo-800 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+        >
+          Gerar QR Code
+        </button>
       </div>
 
       <div className="flex-1 bg-white rounded-xl border border-gray-200 p-6 flex flex-col items-center gap-4">
-        <h2 className="text-lg font-semibold text-gray-900 self-start">Preview</h2>
+        <h2 className="text-lg font-semibold text-gray-900 self-start">Preview do QR Code</h2>
+        <div className="sr-only" aria-live="polite" aria-atomic="true">
+          {qrDataUrl ? 'QR Code gerado com sucesso' : ''}
+        </div>
         {qrDataUrl ? (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element -- data URL gerada dinamicamente, next/image nao aplica */}
-            <img src={qrDataUrl} alt="Preview do QR Code gerado" width={200} height={200} className="rounded-lg max-w-[200px]" />
-            <div className="flex gap-2 w-full">
-              <button onClick={downloadPng} disabled={exporting !== 'idle'} aria-label="Baixar QR Code em formato PNG" className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50">PNG</button>
-              <button onClick={downloadSvg} disabled={exporting !== 'idle'} aria-label="Baixar QR Code em formato SVG" className="flex-1 bg-white border border-indigo-600 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors disabled:opacity-50">SVG</button>
-              <button onClick={downloadPdf} disabled={exporting !== 'idle'} aria-label="Baixar QR Code em formato PDF" className="flex-1 bg-white border border-indigo-600 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors disabled:opacity-50">{exporting === 'pdf' ? 'Gerando…' : 'PDF'}</button>
+            <img src={qrDataUrl} alt="Preview do QR Code gerado" width={size} height={size} className="rounded-lg max-w-full animate-fade-in" style={{ maxWidth: `${Math.min(size, 300)}px` }} />
+            <div className="w-full">
+              <ExportActions
+                disabled={exporting !== 'idle'}
+                actions={[
+                  { label: 'PNG', ariaLabel: 'Baixar QR Code em formato PNG', onClick: downloadPng, variant: 'primary' },
+                  { label: 'SVG', ariaLabel: 'Baixar QR Code em formato SVG', onClick: downloadSvg, variant: 'secondary' },
+                  { label: 'PDF', ariaLabel: 'Baixar QR Code em formato PDF', onClick: downloadPdf, variant: 'secondary', loading: exporting === 'pdf', loadingLabel: 'Gerando…' },
+                ]}
+              />
             </div>
           </>
         ) : (

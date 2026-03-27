@@ -1,32 +1,30 @@
 'use client'
 
-import { useSyncExternalStore, useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { getConsent, saveConsent, applyConsent } from '@/lib/consent'
 
-const noopSubscribe = (_cb: () => void) => () => {}
-const getHasConsent = () => getConsent() !== null
-const serverSnapshot = () => true
+const subscribeNoop = () => () => {}
+const getClientSnapshot = () => true
+const getServerSnapshot = () => false
 
 export default function CookieConsent() {
-  const hasConsent = useSyncExternalStore(noopSubscribe, getHasConsent, serverSnapshot)
-
+  const mounted = useSyncExternalStore(subscribeNoop, getClientSnapshot, getServerSnapshot)
+  const [hasConsent, setHasConsent] = useState(() => {
+    if (typeof window === 'undefined') return true
+    const existing = getConsent()
+    if (existing) applyConsent(existing)
+    return existing !== null
+  })
   const [dismissed, setDismissed] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [analytics, setAnalytics] = useState(false)
   const [advertising, setAdvertising] = useState(false)
-
-  const appliedRef = useRef(false)
-  useEffect(() => {
-    if (appliedRef.current) return
-    appliedRef.current = true
-    const existing = getConsent()
-    if (existing) {
-      applyConsent(existing)
-    }
-  }, [])
+  const settingsPanelRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<Element | null>(null)
 
   const dismiss = useCallback(() => {
+    setHasConsent(true)
     setDismissed(true)
     setShowSettings(false)
   }, [])
@@ -47,17 +45,69 @@ export default function CookieConsent() {
   }, [analytics, advertising, dismiss])
 
   const handleOpenSettings = useCallback(() => {
+    triggerRef.current = document.activeElement
     const existing = getConsent()
-    if (existing) {
-      setAnalytics(existing.analytics)
-      setAdvertising(existing.advertising)
-    }
+    setAnalytics(existing?.analytics ?? false)
+    setAdvertising(existing?.advertising ?? false)
     setShowSettings(true)
   }, [])
 
   const handleCloseSettings = useCallback(() => {
     setShowSettings(false)
   }, [])
+
+  useEffect(() => {
+    if (!showSettings) return
+
+    const scrollY = window.scrollY
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.left = '0'
+    document.body.style.right = '0'
+
+    settingsPanelRef.current?.focus()
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') handleCloseSettings()
+      if (e.key === 'Tab' && settingsPanelRef.current) {
+        const focusable = settingsPanelRef.current.querySelectorAll<HTMLElement>(
+          'button, input, [tabindex]:not([tabindex="-1"])',
+        )
+        if (focusable.length === 0) return
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.left = ''
+      document.body.style.right = ''
+      window.scrollTo(0, scrollY)
+      document.removeEventListener('keydown', onKeyDown)
+      if (triggerRef.current instanceof HTMLElement) {
+        triggerRef.current.focus()
+      }
+    }
+  }, [showSettings, handleCloseSettings])
+
+  useEffect(() => {
+    function handleOpenFromFooter() {
+      handleOpenSettings()
+    }
+    window.addEventListener('geracode:open-cookie-settings', handleOpenFromFooter)
+    return () => window.removeEventListener('geracode:open-cookie-settings', handleOpenFromFooter)
+  }, [handleOpenSettings])
+
+  if (!mounted) return null
 
   const isVisible = !hasConsent && !dismissed
 
@@ -77,11 +127,27 @@ export default function CookieConsent() {
           aria-hidden="true"
         />
 
-        <div className="relative w-full max-w-2xl mx-4 mb-4 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-slide-up">
+        <div
+          ref={settingsPanelRef}
+          tabIndex={-1}
+          className="relative w-full max-w-2xl mx-4 mb-4 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-slide-up outline-none"
+        >
           <div className="p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-1">
-              Preferências de Cookies
-            </h2>
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Preferências de Cookies
+              </h2>
+              <button
+                onClick={handleCloseSettings}
+                aria-label="Fechar preferências de cookies"
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
             <p className="text-sm text-gray-500 mb-5">
               Escolha quais cookies deseja permitir. Cookies essenciais não podem ser desativados.
             </p>
@@ -110,13 +176,13 @@ export default function CookieConsent() {
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <button
                 onClick={handleSavePreferences}
-                className="flex-1 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                className="flex-1 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
               >
                 Salvar preferências
               </button>
               <button
                 onClick={handleAcceptAll}
-                className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+                className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
               >
                 Aceitar todos
               </button>
@@ -156,19 +222,19 @@ export default function CookieConsent() {
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <button
               onClick={handleAcceptAll}
-              className="flex-1 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              className="flex-1 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
             >
               Aceitar todos
             </button>
             <button
               onClick={handleRejectAll}
-              className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+              className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
             >
               Rejeitar não essenciais
             </button>
             <button
               onClick={handleOpenSettings}
-              className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+              className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
             >
               Personalizar
             </button>
@@ -192,7 +258,7 @@ function CookieCategory({
   disabled?: boolean
   onChange?: (v: boolean) => void
 }) {
-  const id = title.toLowerCase().replace(/\s+/g, '-')
+  const id = `cookie-${title.toLowerCase().replace(/\s+/g, '-')}`
 
   return (
     <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
