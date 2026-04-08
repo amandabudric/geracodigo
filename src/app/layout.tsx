@@ -83,6 +83,17 @@ export default function RootLayout({
           <>
             <link rel="preconnect" href="https://googleads.g.doubleclick.net" crossOrigin="anonymous" />
             <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net" />
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`}
+              strategy="beforeInteractive"
+            />
+            <Script
+              id="google-ads-config"
+              strategy="beforeInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `gtag('js',new Date());gtag('config','${GOOGLE_ADS_ID}');`,
+              }}
+            />
           </>
         )}
       </head>
@@ -113,13 +124,6 @@ export default function RootLayout({
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
             strategy="lazyOnload"
             crossOrigin="anonymous"
-          />
-        )}
-        {GOOGLE_ADS_ID && (
-          <Script
-            src="/scripts/ads-init.js"
-            data-ads-id={GOOGLE_ADS_ID}
-            strategy="afterInteractive"
           />
         )}
         <Script src="/scripts/sw-register.js" strategy="lazyOnload" />
