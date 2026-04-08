@@ -77,6 +77,17 @@ export default function RootLayout({
             <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
             <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
             <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="beforeInteractive"
+            />
+            <Script
+              id="ga4-config"
+              strategy="beforeInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `gtag('js',new Date());gtag('config','${GA_ID}');`,
+              }}
+            />
           </>
         )}
         {GOOGLE_ADS_ID && (
@@ -106,19 +117,6 @@ export default function RootLayout({
         <WebVitalsReporter />
         <CookieConsent />
         <ToastContainer />
-        {GA_ID && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-              strategy="lazyOnload"
-            />
-            <Script
-              src="/scripts/ga4-init.js"
-              data-ga-id={GA_ID}
-              strategy="lazyOnload"
-            />
-          </>
-        )}
         {ADSENSE_CLIENT && (
           <Script
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
