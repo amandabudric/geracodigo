@@ -11,6 +11,9 @@ import ToastContainer from '@/components/Toast'
 // .trim() defende contra env vars coladas no Vercel com \n ou espaço no final,
 // que fazem o gtag('config', id) falhar silenciosamente e zerar os relatórios.
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID?.trim()
+/** `true` ou `1` — envia hits ao DebugView do GA4 (ver doc em privacidade / GA4). */
+const GA_DEBUG =
+  process.env.NEXT_PUBLIC_GA_DEBUG === 'true' || process.env.NEXT_PUBLIC_GA_DEBUG === '1'
 const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT?.trim()
 const GOOGLE_ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID?.trim() || 'AW-18071358338'
 const GTAG_PRIMARY_ID = GA_ID || GOOGLE_ADS_ID
@@ -100,7 +103,9 @@ export default function RootLayout({
               id="ga4-config"
               strategy="beforeInteractive"
               dangerouslySetInnerHTML={{
-                __html: `gtag('config','${GA_ID}');`,
+                __html: GA_DEBUG
+                  ? `gtag('config','${GA_ID}',{debug_mode:${true}});`
+                  : `gtag('config','${GA_ID}');`,
               }}
             />
           </>

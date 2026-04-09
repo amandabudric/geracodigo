@@ -17,6 +17,7 @@ export default function BarcodeReader() {
   const [isCameraLoading, setIsCameraLoading] = useState(false)
   const [results, setResults] = useState<DecodedResult[]>([])
   const [error, setError] = useState('')
+  const [copyError, setCopyError] = useState('')
   const [copied, setCopied] = useState<string | null>(null)
   const [manualInput, setManualInput] = useState('')
   const [showClearConfirm, setShowClearConfirm] = useState(false)
@@ -41,6 +42,7 @@ export default function BarcodeReader() {
 
   const startCamera = useCallback(async () => {
     setError('')
+    setCopyError('')
     if (typeof BarcodeDetector === 'undefined') {
       const browser = navigator.userAgent
       const isSafari = /Safari/.test(browser) && !/Chrome/.test(browser)
@@ -131,13 +133,14 @@ export default function BarcodeReader() {
     try {
       await navigator.clipboard.writeText(value)
       setCopied(value)
+      setCopyError('')
       trackCopy('barcode_reader', 'scanned_code')
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current)
       copyTimeoutRef.current = setTimeout(() => setCopied(null), 2000)
     } catch {
-      setError('Não foi possível copiar. Selecione o texto manualmente.')
+      setCopyError('Não foi possível copiar. Selecione o texto manualmente.')
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current)
-      copyTimeoutRef.current = setTimeout(() => setError(''), 3000)
+      copyTimeoutRef.current = setTimeout(() => setCopyError(''), 3000)
     }
   }
 
@@ -199,9 +202,10 @@ export default function BarcodeReader() {
           )}
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-3 text-sm mb-4" role="alert">
-            {error}
+        {(error || copyError) && (
+          <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-3 text-sm mb-4 space-y-2" role="alert">
+            {error ? <p>{error}</p> : null}
+            {copyError ? <p>{copyError}</p> : null}
           </div>
         )}
 
@@ -240,8 +244,9 @@ export default function BarcodeReader() {
               className="flex-1 border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
             />
             <button
+              type="button"
               onClick={handleManualAdd}
-              className="bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors min-h-[44px]"
+              className="bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
             >
               Adicionar
             </button>
@@ -262,7 +267,13 @@ export default function BarcodeReader() {
             <h3 className="text-sm font-semibold text-gray-700">
               Códigos detectados ({results.length})
             </h3>
-            <button onClick={() => setShowClearConfirm(true)} className="text-xs text-red-500 hover:text-red-700 min-h-[44px] px-3">Limpar</button>
+            <button
+              type="button"
+              onClick={() => setShowClearConfirm(true)}
+              className="text-xs text-red-500 hover:text-red-700 min-h-[44px] px-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+            >
+              Limpar
+            </button>
           </div>
           <div className="space-y-2 max-h-[400px] overflow-y-auto">
             {results.map((r, i) => (
@@ -272,8 +283,9 @@ export default function BarcodeReader() {
                 </span>
                 <span className="text-sm text-gray-800 font-mono flex-1 truncate">{r.value}</span>
                 <button
+                  type="button"
                   onClick={() => handleCopy(r.value)}
-                  className={`text-xs px-3 py-2 rounded transition-colors shrink-0 min-h-[44px] ${
+                  className={`text-xs px-3 py-2 rounded transition-colors shrink-0 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
                     copied === r.value ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >

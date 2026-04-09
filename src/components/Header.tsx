@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
+import { trackCtaClick } from '@/lib/analytics'
 
 const navLinks = [
   { href: '/gerador-de-codigo-de-barras', label: 'Código de Barras' },
@@ -109,6 +110,7 @@ export default function Header() {
                             ? 'text-indigo-600 font-semibold'
                             : 'hover:text-indigo-600'
                         }`}
+                        onClick={() => trackCtaClick(undefined, `nav_desktop_${href}`, label)}
                       >
                         {label}
                       </Link>
@@ -160,6 +162,7 @@ export default function Header() {
                                 ? 'bg-indigo-50 text-indigo-600'
                                 : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'
                             }`}
+                            onClick={() => trackCtaClick(undefined, `nav_mobile_${href}`, label)}
                           >
                             {label}
                           </Link>

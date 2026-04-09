@@ -47,7 +47,8 @@ export default function CookieConsent() {
   const handleOpenSettings = useCallback(() => {
     triggerRef.current = document.activeElement
     const existing = getConsent()
-    setAnalytics(existing?.analytics ?? false)
+    // Sem preferência salva, o site usa analytics ativo (opt-out) — alinha com hasAnalyticsConsent().
+    setAnalytics(existing?.analytics ?? true)
     setAdvertising(existing?.advertising ?? false)
     setShowSettings(true)
   }, [])
@@ -197,6 +198,7 @@ export default function CookieConsent() {
     <div
       role="dialog"
       aria-label="Aviso de cookies"
+      aria-modal="true"
       className="fixed bottom-0 left-0 right-0 z-[9999] p-4 pointer-events-none"
     >
       <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl border border-gray-200 pointer-events-auto animate-slide-up">

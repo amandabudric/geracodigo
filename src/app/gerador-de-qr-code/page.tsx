@@ -8,6 +8,7 @@ import RelatedTools from '@/components/RelatedTools'
 import Breadcrumb from '@/components/Breadcrumb'
 import LastUpdated from '@/components/LastUpdated'
 import GeneratorSkeleton from '@/components/GeneratorSkeleton'
+import ToolEngagementTracker from '@/components/ToolEngagementTracker'
 import { LAST_UPDATED, LAST_UPDATED_ISO } from '@/lib/constants'
 import { reader } from '@/lib/content'
 
@@ -103,6 +104,7 @@ export default async function QrPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <ToolEngagementTracker toolName="qr_code_generator" />
       <SchemaMarkup schema={schemas} />
       <div className="flex justify-center mb-6">
         <AdSlot slot="qr-top" format="horizontal" />
